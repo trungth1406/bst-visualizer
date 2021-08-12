@@ -1,11 +1,14 @@
 
+/**
+ * @constructor
+ * @this Tree
+ */
+export const Tree = function <K, V>(): void {
 
-export const Tree = <K, V>() => {
+    this.root = null;
 
-    let root: TreeNode<K, V> | null = null;
-
-    const insert = (key: K, value: V) => {
-        root = insertNode(root, key, value);
+    const insert = (key: K, value: V): void => {
+        this.root = insertNode(this.root, key, value);
     }
 
     const insertNode = (node: TreeNode<K, V> | null, key: K, value: V): TreeNode<K, V> | null => {
@@ -14,9 +17,9 @@ export const Tree = <K, V>() => {
         }
 
         if (key < node.key) {
-            node = insertNode(node.left, key, value);
+            node.left = insertNode(node.left, key, value);
         } else if (key > node.key) {
-            node = insertNode(node.right, key, value);
+            node.right = insertNode(node.right, key, value);
         } else {
             node.value = value;
         }
@@ -24,11 +27,12 @@ export const Tree = <K, V>() => {
     }
 
     const deleteNode = (key: K): void => {
-        if (root == null) {
+        if (this.root == null) {
             return;
         }
-        root = deleteTreeNode(root, key);
+        this.root = deleteTreeNode(this.root, key);
     }
+
 
     let deleteTreeNode = (node: TreeNode<K, V>, key: K): TreeNode<K, V> | null => {
         if (node.key == key) {
@@ -41,8 +45,10 @@ export const Tree = <K, V>() => {
             node.right = deleteTreeNode(node.right, key);
         } else {
             const min = minNode(node.right!);
-
-
+            const subRoot = delMin(node.right!);
+            min.left = node.left;
+            min.right = subRoot.right;
+            return min;
         }
         return null;
     }
@@ -54,6 +60,18 @@ export const Tree = <K, V>() => {
         return minNode(node.left);
     }
 
+    let delMin = (node: TreeNode<K, V>): TreeNode<K, V> => {
+        if (node.left == null) {
+            return node;
+        } else if (node.left.left == null) {
+            let nodeToReturn = node.left;
+            node.key = nodeToReturn.key;
+            node.left = null;
+            return nodeToReturn;
+        }
+        return delMin(node.left);
+    }
+
 
 
     interface TreeNode<K, V> {
@@ -62,12 +80,8 @@ export const Tree = <K, V>() => {
         left: TreeNode<K, V> | null,
         right: TreeNode<K, V> | null,
     };
-
-
-    return {
-        root: root,
-        insert: insert,
-        delete: deleteNode
-    }
+    Tree.prototype.insert = insert;
+    Tree.prototype.deleteNode = deleteNode;
 }
+
 

@@ -4,27 +4,30 @@ interface TreeNode<K, V> {
     left: TreeNode<K, V> | null,
     right: TreeNode<K, V> | null,
 };
+
+interface BinarySearchTree<K, V> {
+    getRoot: () => TreeNode<K, V> | null
+    insert: (key: K, value: V) => void
+    deleteNode: (key: K) => void
+}
 /**
  * @constructor
  * @this Tree
  */
-export const Tree = function <K, V>(): void {
+const Tree = function <K, V>(): void {
 
-    this.root = null;
 
-    this.insert = (key: K, value: V): void => {
+    Tree.prototype.insert = (key: K, value: V): void => {
         this.root = this.insertNode(this.root, key, value);
     }
 
-    this.deleteNode = (key: K): void => {
+    Tree.prototype.deleteNode = (key: K): void => {
         if (this.root == null) {
             return;
         }
         this.root = this.deleteTreeNode(this.root, key);
     }
-
 }
-
 
 
 Tree.prototype.insertNode = function insertNode<K, V>(node: TreeNode<K, V> | null, key: K, value: V): TreeNode<K, V> | null {
@@ -44,7 +47,7 @@ Tree.prototype.insertNode = function insertNode<K, V>(node: TreeNode<K, V> | nul
 
 
 Tree.prototype.deleteTreeNode = function deleteTreeNode<K, V>(node: TreeNode<K, V>, key: K): TreeNode<K, V> | null {
-    if (node.key == key) {
+    if (!node) {
         return null;
     }
 
@@ -53,13 +56,15 @@ Tree.prototype.deleteTreeNode = function deleteTreeNode<K, V>(node: TreeNode<K, 
     } else if (node.right && key > node.right.key) {
         node.right = deleteTreeNode(node.right, key);
     } else {
-        const min = Tree.prototype.minNode(node.right!);
-        const subRoot = Tree.prototype.delMin(node.right!);
-        min.left = node.left;
-        min.right = subRoot!.right;
-        return min;
+        if (!node.left) return node.right;
+        if (!node.right) return node.left;
+
+        let tmpRef = node;
+        node = this.minNode(tmpRef.right);
+        node.right = this.delMin(tmpRef.right)
+        node.left = tmpRef.left;
     }
-    return null;
+    return node;
 }
 
 
@@ -73,11 +78,41 @@ Tree.prototype.minNode = function minNode<K, V>(node: TreeNode<K, V>): TreeNode<
 Tree.prototype.delMin = function delMin<K, V>(node: TreeNode<K, V>): TreeNode<K, V> | null {
     if (node.left == null) {
         return node.right;
-    } else if (node.left.left == null) {
-        let nodeToReturn = node.left;
-        node.key = nodeToReturn.key;
-        node.left = null;
-        return nodeToReturn;
     }
-    return delMin(node.left);
+    node.left = delMin(node.left);
+    return node;
 }
+
+
+const BinarySearchTree = function <K, V>(): BinarySearchTree<K, V> {
+
+
+    const insert = (key: K, value: V): void => {
+        this.root = this.insertNode(this.root, key, value);
+    }
+
+    const deleteNode = (key: K): void => {
+        if (this.root == null) {
+            return;
+        }
+        this.root = this.deleteTreeNode(this.root, key);
+    }
+
+    return {
+        getRoot: () => { return this.root },
+        insert: insert,
+        deleteNode: deleteNode
+    }
+};
+
+
+const BasicBinarySearchTree = function <K, V>() {
+    const newObj = Object.assign(Object.create(Tree.prototype), { root: null })
+    return {
+        newInstance: BinarySearchTree.bind(newObj)
+    };
+}
+
+
+
+export { BasicBinarySearchTree }

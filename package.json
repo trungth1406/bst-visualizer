@@ -1,10 +1,11 @@
 {
-  "name": "bst-visualizer",
+  "name": "bst-from-scratch",
   "version": "1.0.0",
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "test": "mocha -r ts-node/register tests/*.test.ts"
+    "test": "mocha -r ts-node/register tests/*.test.ts",
+    "start": "electron ."
   },
   "repository": {
     "type": "git",

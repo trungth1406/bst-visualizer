@@ -48,6 +48,6 @@ describe('create new bst tree with api', () => {
         otherTree.deleteNode(12);
         expect(tree.getRoot()?.left).not.null;
         expect(tree.getRoot()?.left?.key).eq(10);
-        expect(tree.getRoot()?.right).not.null;
+        expect(tree.getRoot()?.right).is.null;
     });
 });

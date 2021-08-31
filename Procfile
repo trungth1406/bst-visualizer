@@ -1,2 +1,2 @@
 react: npm start
-electron:  node src/start-up.js
+# electron:  node src/start-up.js

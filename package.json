@@ -4,6 +4,8 @@
   "private": true,
   "dependencies": {
     "@craco/craco": "^6.2.0",
+    "@inlet/react-pixi": "^6.6.5",
+    "@svgdotjs/svg.js": "^3.1.1",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",
@@ -50,6 +52,7 @@
     "electron": "^13.2.2",
     "foreman": "^3.0.1",
     "postcss": "^7.0.36",
+    "react-d3-library": "^1.1.8",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.8"
   },
   "homepage": "./"

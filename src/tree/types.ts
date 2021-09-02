@@ -13,8 +13,8 @@ export interface ViewProps {
 }
 
 export interface Position {
-    x: number
-    y: number
+    x: number 
+    y: number 
 }
 
 export interface Dimension {

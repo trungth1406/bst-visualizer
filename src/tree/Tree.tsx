@@ -1,4 +1,5 @@
-import React, { MutableRefObject, useEffect, useRef, useState } from "react";
+import { Stage } from "@inlet/react-pixi";
+import { useEffect, useRef, useState } from "react";
 import { BasicBinarySearchTree, TreeNode } from "./bst";
 import Node from "./Node";
 import { Dimension, Position, ViewNodeProps } from "./types";
@@ -47,11 +48,13 @@ function Tree() {
 
     return (
         <div ref={nodeContainer} className="w-full" style={{ position: "relative" }}>
+
             {
                 nodes.map((element: any, index: any) => {
-                    return <Node id={index} nodeProps={element} parentProps={nodes[index - 1]} />;
+                    return <Node id={index} nodeProps={element} parentProps={nodes[index - 1]} container={nodeContainer} />;
                 })
             }
+
         </div>
     );
 }
@@ -68,19 +71,22 @@ function generateViewNode(node: TreeNode<any, any>, parentNode: ViewNodeProps | 
             boundingRect: rectSize,
             viewProps: {
                 position: {
-                    x: rectSize.width / 2, y: 10
+                    x: rectSize.width / 2,
+                    y: 10
                 }
             }
         }
     }
     let parentPos = parentNode.viewProps.position
-    let A: Position = { x: parentPos.x - 32, y: parentPos.y }
-    let B: Position = { x: parentPos.x, y: parentPos.y + (2 * 32) }
+
+
+    // let A: Position = { x: parentPos.x - 32, y: parentPos.y }
+    // let B: Position = { x: parentPos.x, y: parentPos.y + (2 * 32) }
     let C: Position = {
         x: isLeft ? parentPos.x - 96 : parentPos.x + 96,
         y: parentPos.y + (96)
     }
-
+    console.log(C);
 
     return {
         node: node,
@@ -100,9 +106,9 @@ function useRectSize(initialValue: Dimension, rectRef: any) {
     useEffect(() => {
         function handleResize() {
             if (rectRef) {
-                let { width, height } = rectRef.getBoundingClientRect();
+                let { width, height, left } = rectRef.getBoundingClientRect();
                 setrectSize({
-                    width: width,
+                    width: width - left,
                     height: height,
                 });
             }

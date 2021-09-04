@@ -1,8 +1,9 @@
 import { Graphics, Stage } from '@inlet/react-pixi';
 import { SVG } from '@svgdotjs/svg.js';
-import { MouseEventHandler, useCallback, useEffect, useRef, useState } from 'react';
+import { MouseEventHandler, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { findDOMNode } from 'react-dom';
-import { Position, ViewNodeProps } from './types';
+import ConnectedLine from './ConnectedLine/ConnectedLine';
+import { ConnectedPath, Position, ViewNodeProps } from './types';
 
 
 
@@ -11,6 +12,7 @@ function Node(props: { id: number, nodeProps: ViewNodeProps, parentProps: ViewNo
     let nodeProps = props.nodeProps;
     let parentProps = props.parentProps;
     let nodeRect: any = useRef(null);
+
 
 
 
@@ -25,7 +27,9 @@ function Node(props: { id: number, nodeProps: ViewNodeProps, parentProps: ViewNo
             isDragging: false
         });
 
-    useEffect(() => {
+    let [path, setPath] = useState<ConnectedPath>({ from: { x: 0, y: 0 }, to: { x: 0, y: 0 } });
+
+    useLayoutEffect(() => {
         setCurrentPos({
             pos: {
                 x: nodeProps.viewProps.position.x, y: nodeProps.viewProps.position.y
@@ -33,6 +37,26 @@ function Node(props: { id: number, nodeProps: ViewNodeProps, parentProps: ViewNo
             mousePos: { x: 0, y: 0 },
             isDragging: false
         });
+        console.log(parentProps, currentPos);
+
+        if (parentProps && currentPos) {
+            let parentPos = parentProps.viewProps.position;
+            let currentPos = nodeProps.viewProps.position;
+            console.log(parentPos);
+            console.log(currentPos);
+
+            setPath({
+                from: {
+                    x: parentPos.x,
+                    y: parentPos.y
+                },
+                to: {
+                    x: currentPos.x,
+                    y: currentPos.y
+                }
+            })
+        }
+
 
     }, [nodeRect, nodeProps])
 
@@ -81,15 +105,30 @@ function Node(props: { id: number, nodeProps: ViewNodeProps, parentProps: ViewNo
     }
 
     return (
-        <div id={"node-" + props.id}
-            onMouseDown={onMouseDown}
-            onMouseMove={onMouseMove}
-            onMouseUp={onMouseUp}
-            ref={nodeRect} className="w-24 h-24 font-bold text-gray-700 
+        <g>
+
+            <circle id={"node-" + props.id}
+                onMouseDown={onMouseDown}
+                onMouseMove={onMouseMove}
+                onMouseUp={onMouseUp}
+                ref={nodeRect} className="w-24 h-24 font-bold text-gray-700 
         rounded-full bg-red-400 flex items-center justify-center font-mono"
-            style={{ position: "absolute", left: currentPos.pos.x, top: currentPos.pos.y }}>
-            {nodeProps == null ? '' : nodeProps.node.key}
-        </div>
+                style={{
+                    position: "absolute",
+                    cursor: "pointer",
+                    zIndex: 99,
+
+                }}
+                cx={currentPos.pos.x} cy={currentPos.pos.y} r={90} color="red"
+                fill="rgba(248, 113, 113,1)" stroke="none"
+            >
+
+            </circle>
+            <text x={currentPos.pos.x} y={currentPos.pos.y} text-anchor="middle" stroke-width="10px" dy=".3em">
+                {nodeProps == null ? '' : nodeProps.node.key}
+            </text>
+        </g >
+
 
     );
 }

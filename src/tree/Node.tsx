@@ -1,15 +1,16 @@
-import { Graphics, Stage } from '@inlet/react-pixi';
-import { SVG } from '@svgdotjs/svg.js';
+
 import { MouseEventHandler, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { findDOMNode } from 'react-dom';
 import ConnectedLine from './ConnectedLine/ConnectedLine';
-import { ConnectedPath, Position, ViewNodeProps } from './types';
+import { Position, ViewNodeProps } from './types';
+import { generateSvgPoint } from './utils';
 
 
 
 
 function Node(props: { id: number, nodeProps: ViewNodeProps, parentProps: ViewNodeProps, container: any }) {
     let nodeProps = props.nodeProps;
+    let treeContainer = props.container;
     let parentProps = props.parentProps;
     let nodeRect: any = useRef(null);
 
@@ -27,38 +28,22 @@ function Node(props: { id: number, nodeProps: ViewNodeProps, parentProps: ViewNo
             isDragging: false
         });
 
-    let [path, setPath] = useState<ConnectedPath>({ from: { x: 0, y: 0 }, to: { x: 0, y: 0 } });
 
     useLayoutEffect(() => {
+        let relativeSvgPoint = generateSvgPoint(treeContainer.current, nodeRect.current, nodeProps.viewProps.position.x, nodeProps.viewProps.position.y);
+        // console.log("Relative svg point: ", relativeSvgPoint);
+
         setCurrentPos({
             pos: {
-                x: nodeProps.viewProps.position.x, y: nodeProps.viewProps.position.y
+                x: relativeSvgPoint.x, y: relativeSvgPoint.y
             },
             mousePos: { x: 0, y: 0 },
             isDragging: false
         });
-        console.log(parentProps, currentPos);
 
-        if (parentProps && currentPos) {
-            let parentPos = parentProps.viewProps.position;
-            let currentPos = nodeProps.viewProps.position;
-            console.log(parentPos);
-            console.log(currentPos);
-
-            setPath({
-                from: {
-                    x: parentPos.x,
-                    y: parentPos.y
-                },
-                to: {
-                    x: currentPos.x,
-                    y: currentPos.y
-                }
-            })
-        }
+    }, [props])
 
 
-    }, [nodeRect, nodeProps])
 
     const onMouseDown = function (e: any) {
         if (e.button !== 0) return
@@ -119,7 +104,7 @@ function Node(props: { id: number, nodeProps: ViewNodeProps, parentProps: ViewNo
                     zIndex: 99,
 
                 }}
-                cx={currentPos.pos.x} cy={currentPos.pos.y} r={90} color="red"
+                cx={currentPos.pos.x} cy={currentPos.pos.y} r={30} color="red"
                 fill="rgba(248, 113, 113,1)" stroke="none"
             >
 
@@ -127,6 +112,7 @@ function Node(props: { id: number, nodeProps: ViewNodeProps, parentProps: ViewNo
             <text x={currentPos.pos.x} y={currentPos.pos.y} text-anchor="middle" stroke-width="10px" dy=".3em">
                 {nodeProps == null ? '' : nodeProps.node.key}
             </text>
+            <ConnectedLine container={props.container} parentRef={parentProps} childRef={nodeProps} nodePos={currentPos} />
         </g >
 
 

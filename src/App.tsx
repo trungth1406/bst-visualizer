@@ -8,7 +8,7 @@ import MainContent from './main/MainContent';
 function App() {
   return (
     <div className="flex flex-no-wrap h-screen">
-      <SideBar></SideBar>
+      {/* <SideBar></SideBar> */}
       <MainContent></MainContent>
     </div>
   );

@@ -1,13 +1,18 @@
 import React from "react";
+import Diagram from "../diagram/Diagram";
+import NodeCursor from "../tree/NodeCursor";
 import Tree from "../tree/Tree";
+import InteractiveToolBar from "./InteractiveToolBar";
 
 function MainContent() {
 
     return (
-        <div className="flex-row align-middle container mx-auto py-10 h-64 md:w-4/5 w-11/12 px-6">
-            <div className="flex flex-row w-full h-full rounded border-dashed border-2 border-gray-300"  style={{ width: "100%", height: "900px" }}>
-                <Tree></Tree>
+        <div className="content-container">
+            <InteractiveToolBar />
+            <div className="main-content-container">
+                <Diagram />
             </div>
+
         </div>
     )
 }

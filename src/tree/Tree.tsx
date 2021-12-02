@@ -2,18 +2,16 @@ import { Stage } from "@inlet/react-pixi";
 import { useEffect, useRef, useState } from "react";
 import { BasicBinarySearchTree, TreeNode } from "./bst";
 import Node from "./Node";
+import NodeCursor from "./NodeCursor";
 import { Dimension, Position, ViewNodeProps } from "./types";
 import { generateSvgPoint } from "./utils";
 
-let tree = BasicBinarySearchTree<String, Number>().newInstance();
+
 
 function Tree() {
 
-    tree.insert(10, "A");
-    tree.insert(16, "A");
-    tree.insert(9, "A");
-
     const nodeContainer: any = useRef(null);
+    let tree = BasicBinarySearchTree<number, any>().newInstance();
     const rootNode = tree.getRoot();
     const treeNodes: ViewNodeProps[] = [];
 
@@ -24,7 +22,7 @@ function Tree() {
         let boundingRect = nodeContainer.current.getBoundingClientRect();
         drawNode(rootNode, null, boundingRect, false);
         setNodeArrays([...treeNodes]);
-    }, [nodeContainer, rootNode]);
+    }, [nodeContainer]);
 
 
 
@@ -43,7 +41,7 @@ function Tree() {
         }
     }
 
-    const generateViewNode = function generateViewNode(
+    const generateViewNode = function (
         node: TreeNode<any, any>, parentNode: ViewNodeProps | null,
         treeContainer: any, isLeft: boolean): ViewNodeProps {
         const getX = function (ratioToItsParent: number): number {
@@ -73,14 +71,35 @@ function Tree() {
         }
     }
 
-    return (
-        <svg ref={nodeContainer} width="100%" height="100%" viewBox="0 0 100% 100%" >
-            {
-                nodes.map((element: any, index: any) => {
-                    return <Node id={index} nodeProps={element} parentProps={element.parentNode} container={nodeContainer} />;
-                })
+    const onNodeConfirm = function (e: any, value: any, current: any) {
+        const boundingRect: DOMRect = current.getBoundingClientRect();
+        if (e.key === 'Enter') {
+            console.log(boundingRect.x,boundingRect.y);
+            const {x,y}  = translatedPoint();
+            console.log({x,y});
+            
+        }
+
+       function translatedPoint() {
+            return {
+                x: boundingRect.width / 2 + boundingRect.x,
+                y: boundingRect.height / 2 + boundingRect.y,
             }
-        </svg>
+        }
+
+    }
+
+    return (
+        <div>
+            <NodeCursor onNodeConfirm={onNodeConfirm} />
+            <svg className="tree-area" ref={nodeContainer} width="100%" height="100%"  >
+                {
+                    nodes.map((element: any, index: any) => {
+                        return <Node id={index} nodeProps={element} parentProps={element.parentNode} container={nodeContainer} />;
+                    })
+                }
+            </svg>
+        </div>
     );
 }
 

@@ -31,8 +31,7 @@ function Node(props: { id: number, nodeProps: ViewNodeProps, parentProps: ViewNo
 
     useLayoutEffect(() => {
         let relativeSvgPoint = generateSvgPoint(treeContainer.current, nodeRect.current, nodeProps.viewProps.position.x, nodeProps.viewProps.position.y);
-        // console.log("Relative svg point: ", relativeSvgPoint);
-
+        animateCircle();
         setCurrentPos({
             pos: {
                 x: relativeSvgPoint.x, y: relativeSvgPoint.y
@@ -57,9 +56,6 @@ function Node(props: { id: number, nodeProps: ViewNodeProps, parentProps: ViewNo
             },
             isDragging: true
         })
-
-
-
         e.stopPropagation();
         e.preventDefault();
     }
@@ -89,27 +85,32 @@ function Node(props: { id: number, nodeProps: ViewNodeProps, parentProps: ViewNo
         e.preventDefault();
     }
 
+    const animateCircle = function () {
+        let circle = document.getElementById("node-" + props.id);
+        let interval = 30;
+        let currentAngle = 0;
+        let timer = window.setInterval(function () {
+            circle?.setAttribute("stroke-dasharray", currentAngle + ", 20000");
+            if (currentAngle >= 360) {
+                window.clearInterval(timer);
+            }
+            currentAngle += 15;
+        }, interval);
+    }
+
     return (
         <g>
-
-            <circle id={"node-" + props.id}
+            <circle id={"node-" + props.id} className="node"
                 onMouseDown={onMouseDown}
                 onMouseMove={onMouseMove}
                 onMouseUp={onMouseUp}
-                ref={nodeRect} className="w-24 h-24 font-bold text-gray-700 
-        rounded-full bg-red-400 flex items-center justify-center font-mono"
-                style={{
-                    position: "absolute",
-                    cursor: "pointer",
-                    zIndex: 99,
-
-                }}
-                cx={currentPos.pos.x} cy={currentPos.pos.y} r={30} color="red"
-                fill="rgba(248, 113, 113,1)" stroke="none"
+                ref={nodeRect}
+                cx={currentPos.pos.x} cy={currentPos.pos.y} r={50} color="red"
+                fill="white" stroke="#5c6274"
             >
 
             </circle>
-            <text x={currentPos.pos.x} y={currentPos.pos.y} text-anchor="middle" stroke-width="10px" dy=".3em">
+            <text font-size="2em" className="node-text" x={currentPos.pos.x} y={currentPos.pos.y} text-anchor="middle" stroke-width="12px" dy=".3em">
                 {nodeProps == null ? '' : nodeProps.node.key}
             </text>
             <ConnectedLine container={props.container} parentRef={parentProps} childRef={nodeProps} nodePos={currentPos} />

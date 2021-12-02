@@ -1,0 +1,175 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html{
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif       
+}
+
+@layer components{
+   
+    
+    .page-container{
+        @apply grid grid-cols-12 gap-3
+    }
+
+    .sidebar-container{
+        @apply  relative  min-w-full max-w-full col-start-1 col-end-2 top-0 left-0 h-screen bg-gray-600 shadow-xl;
+    }
+
+    .menu-container{
+        @apply min-w-full w-full grid grid-flow-row justify-center items-center gap-3 
+    }
+
+    .icon{
+        @apply w-14 h-14  flex items-center justify-around gap-3   mt-2 mb-2 bg-gray-800
+         border-solid shadow-lg mix-blend-hard-light rounded-3xl hover:rounded-xl transition-all
+    }
+    
+
+    .content-container{
+        @apply flex flex-col justify-items-center items-center
+                 h-full col-start-2 col-end-13 bg-white gap-4
+    }
+
+
+    .toolbar-container{
+        @apply  flex items-center gap-4 content-around
+                max-w-screen-sm  mt-3 
+                rounded-full w-9/12 h-16
+                 bg-gray-500 
+                 p-2 
+       
+    }
+
+    .action-container{
+        @apply flex items-center justify-around bg-gray-800
+                 w-12 h-12 rounded-3xl transition-all duration-300 ease-linear
+                 cursor-pointer relative
+    }
+
+
+    .action-icon{
+        @apply absolute transition-opacity ease-in-out duration-500
+    }
+
+    .first-hidden{
+        @apply opacity-0
+    }
+
+    .action-container:nth-child(1){
+        @apply hover:bg-green-500 cursor-pointer
+    }
+    
+    .action-container:nth-child(2){
+        @apply hover:bg-red-500
+    }
+    .action-container:nth-child(3){
+        @apply hover:bg-blue-500
+    }
+    .action-container:nth-child(4){
+        @apply hover:bg-yellow-500
+    }
+
+
+    .main-content-container{
+        @apply max-h-full  h-full w-full rounded-2xl border-dashed border-2 border-gray-400 overflow-hidden 
+    }
+
+
+    .diagram-container{
+        @apply top-0 left-0 w-full h-full block overflow-auto  
+    }
+
+    .hover-content{
+        @apply absolute w-auto p-2 m-2 min-w-max rounded-md shadow-md text-white bg-gray-700  top-20
+                transition-all duration-100 scale-0
+               
+    }
+
+   
+
+    .node{
+        @apply cursor-pointer 
+    }
+
+
+    .node-text{
+        @apply text-sm
+    }
+
+    .node-cursor {
+        @apply rounded-full absolute w-14 h-14 border-dashed  border-gray-600 z-10 hidden
+               transition-transform animate-pingone bg-white
+    }
+
+    .remove-node{
+        @apply  transition-transform animate-remove
+    }
+
+    .filled-node{
+        @apply bg-white 
+    }
+
+    .input-holder{
+        @apply   w-6 
+    } 
+
+    .value-input{ 
+        @apply flex mr-auto ml-auto w-full z-10
+        text-xs 
+        text-center 
+        overflow-hidden
+        rounded-full
+    }
+
+    .tooltip{
+        @apply absolute min-w-full w-24 text-xs bottom-14 right-0  p-1
+        rounded-sm shadow-md text-white bg-gray-700 
+        transition-all duration-100 text-center flex mt-auto ml-auto items-center
+    }
+
+    .cursor-content{
+        @apply flex
+    }
+
+    .spin-circle{
+        @apply  
+        top-0 bottom-0 right-0 left-0 mt-auto border-gray-600  rounded-full
+        animate-spin absolute 
+    }
+}
+
+.toolbar-container > * {
+    flex: 1 1 25%;
+}
+
+.diagram-container{
+    background-image: url("./assets/bg.png");
+}
+
+.node-cursor{
+    transform:  translate(-50%, -50%);
+}
+
+
+input{
+    background: transparent;
+}
+
+input:focus{
+    outline:  none;
+    background: transparent;
+}
+
+input:active {
+    background: transparent;
+}
+
+.tooltip{
+    font-size: 8px !important;
+}
+
+.spin-circle{
+    border-width: 1px;
+}

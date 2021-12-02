@@ -1,32 +1,59 @@
 {
-  "name": "bst-from-scratch",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.ts",
+  "name": "bst-visualizer",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@craco/craco": "^6.2.0",
+    "@inlet/react-pixi": "^6.6.5",
+    "@svgdotjs/svg.js": "^3.1.1",
+    "@testing-library/jest-dom": "^5.14.1",
+    "@testing-library/react": "^11.2.7",
+    "@testing-library/user-event": "^12.8.3",
+    "@types/jest": "^26.0.24",
+    "@types/node": "^12.20.21",
+    "@types/react": "^17.0.19",
+    "@types/react-dom": "^17.0.9",
+    "generate-react-cli": "^7.0.4",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-icons": "^4.3.1",
+    "react-scripts": "4.0.3",
+    "typescript": "^4.3.5",
+    "web-vitals": "^1.1.2"
+  },
+  "main": "src/electron-index.js",
   "scripts": {
-    "test": "mocha -r ts-node/register tests/*.test.ts",
-    "start": "electron ."
+    "dev": "nf start",
+    "start": "craco  --openssl-legacy-provider start",
+    "build": "craco build",
+    "test": "craco test",
+    "eject": "react-scripts eject",
+    "electron": "electron ."
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/trungth1406/bst-visualizer.git"
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
   },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/trungth1406/bst-visualizer/issues"
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   },
-  "homepage": "https://github.com/trungth1406/bst-visualizer#readme",
   "devDependencies": {
-    "@types/chai": "^4.2.21",
-    "@types/mocha": "^9.0.0",
-    "chai": "^4.3.4",
-    "mocha": "^9.0.3",
-    "nyc": "^15.1.0",
-    "ts-node": "^10.2.0",
-    "typescript": "^4.3.5"
+    "autoprefixer": "^9.8.6",
+    "electron": "^13.2.2",
+    "foreman": "^3.0.1",
+    "postcss": "^7.0.36",
+    "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.2.8"
   },
-  "publishConfig": {
-    "@trungth1406:registry": "https://npm.pkg.github.com"
-  }
+  "homepage": "./"
 }

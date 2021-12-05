@@ -2,8 +2,9 @@
 import { MouseEventHandler, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { findDOMNode } from 'react-dom';
 import ConnectedLine from './ConnectedLine/ConnectedLine';
-import { Position, ViewNodeProps } from './types';
-import { generateSvgPoint } from './utils';
+import { Position, ViewNodeProps } from '../model/types';
+import {BehaviorSubject, takeWhile} from "rxjs";
+import {generateSvgPoint} from "../model/utils";
 
 
 
@@ -30,6 +31,7 @@ function Node(props: { id: number, nodeProps: ViewNodeProps, parentProps: ViewNo
 
 
     useLayoutEffect(() => {
+        console.log('sure')
         let relativeSvgPoint = generateSvgPoint(treeContainer.current, nodeRect.current, nodeProps.viewProps.position.x, nodeProps.viewProps.position.y);
         animateCircle();
         setCurrentPos({
@@ -110,7 +112,7 @@ function Node(props: { id: number, nodeProps: ViewNodeProps, parentProps: ViewNo
             >
 
             </circle>
-            <text font-size="2em" className="node-text" x={currentPos.pos.x} y={currentPos.pos.y} text-anchor="middle" stroke-width="12px" dy=".3em">
+            <text className="node-text" x={currentPos.pos.x} y={currentPos.pos.y} text-anchor="middle" stroke-width="12px" dy=".3em">
                 {nodeProps == null ? '' : nodeProps.node.key}
             </text>
             <ConnectedLine container={props.container} parentRef={parentProps} childRef={nodeProps} nodePos={currentPos} />

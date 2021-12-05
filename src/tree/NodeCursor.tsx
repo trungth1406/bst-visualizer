@@ -1,26 +1,30 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, {useEffect, useRef, useState} from "react";
+import {BehaviorSubject} from "rxjs";
+import {CursorNodePosition, Position} from "../model/types";
 
 
-function NodeCursor(props: { onNodeConfirm: any }) {
+function NodeCursor(props: { treeSubject: BehaviorSubject<CursorNodePosition> }) {
 
     const [toolTip, setToolTip] = useState('Enter a key value');
     const [keyInput, setKeyInput] = useState('');
     const nodeCursorPos = useRef(null);
-    const interactiveArea: SVGElement = document.querySelector(".tree-area")!;
-    let currentNode: HTMLDivElement = document.querySelector(".node-cursor")!;
-    let inpuHolder: HTMLDivElement = document.querySelector(".value-input")!;
 
-    useEffect(()=>{ 
-        console.log(nodeCursorPos.current);
-        
+
+    useEffect(() => {
+
+
     }, [nodeCursorPos])
 
     const onNodeDrop = function (e: any) {
+        const interactiveArea: SVGElement = document.querySelector(".tree-area")!;
+        let currentNode: HTMLDivElement = document.querySelector(".node-cursor")!;
+        let inputHolder: HTMLDivElement = document.querySelector(".value-input")!;
+
         const currentRect = interactiveArea.getBoundingClientRect();
         if (interactiveArea && isInRange(e, currentRect)) {
             currentNode.style.transform = 'scale(2) translate(-30%, -30%)'
             currentNode.classList.add('filled-node');
-            inpuHolder.style.display = 'flex';
+            inputHolder.style.display = 'flex';
         } else {
             if (currentNode.classList.contains('filled-node')) {
                 currentNode.classList.remove('filled-node');
@@ -33,21 +37,38 @@ function NodeCursor(props: { onNodeConfirm: any }) {
         return e.pageX >= currentRect.x && e.pageY > currentRect.y;
     }
 
-    const onNodeKeyChange = function ({target}: any) {
-        setToolTip('Enter to draw the node');
+    const onNodeKeyChange = function (event: any) {
+        let circlePos: any = nodeCursorPos.current;
+        if (circlePos && (event.key === 'Enter' || event.key === 'a')) {
+            let boundingClientRect = circlePos.getBoundingClientRect();
+            const divWidth = boundingClientRect.width;
+            props.treeSubject.next({
+                x: translateToCenter(boundingClientRect.x, divWidth),
+                y: translateToCenter(boundingClientRect.y, divWidth),
+                value: keyInput
+            });
+        }
+    }
+
+    const onValueUpdate = function ({target}: any) {
         setKeyInput(target.value);
+        setToolTip('Enter to draw the node');
+    }
+
+    const translateToCenter = function (coordinate: number, divWidth: number) {
+        return coordinate + (divWidth / 2)
     }
 
     return (
-        <div ref={nodeCursorPos}  onClick={onNodeDrop} className="node-cursor" onChange={onNodeKeyChange}>
-            {/* <div className ="tooltip">{toolTip}</div> */}
+        <div ref={nodeCursorPos} onClick={onNodeDrop} className="node-cursor">
+            {/*<div className ="tooltip">{toolTip}</div>*/}
             <div className="cursor-content">
                 <input className="value-input"
-                    placeholder="Key"
-                    value={keyInput}
-                    onKeyDown={(e) => props.onNodeConfirm(e, keyInput , currentNode)} />
-                <svg className="spin-circle" viewBox="0 0 24 24">
-                </svg>
+                       placeholder="Key"
+                       onChange={onValueUpdate}
+                       onKeyPress={onNodeKeyChange}
+                       value={keyInput}/>
+                <div className="spin-circle" />
             </div>
         </div>);
 }

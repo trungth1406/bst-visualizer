@@ -1,8 +1,8 @@
 import React from "react";
 import Diagram from "../diagram/Diagram";
-import NodeCursor from "../tree/NodeCursor";
-import Tree from "../tree/Tree";
 import InteractiveToolBar from "./InteractiveToolBar";
+import {BehaviorSubject} from "rxjs";
+
 
 function MainContent() {
 

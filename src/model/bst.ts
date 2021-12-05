@@ -2,25 +2,29 @@
  * @constructor
  * @this Tree
  */
-const Tree = function <K, V>(): void {
 
+const Tree = function <K, V>(): any {
 
-    Tree.prototype.insert = (key: K, value: V): void => {
+    this.insert = function (key: K, value: V): void {
         this.root = this.insertNode(this.root, key, value);
     }
 
-    Tree.prototype.deleteNode = (key: K): void => {
+    this.deleteNode = function (key: K): void {
         if (this.root == null) {
             return;
         }
         this.root = this.deleteTreeNode(this.root, key);
+    }
+
+    this.getRoot = function (): TreeNode<K, V> {
+        return this.root;
     }
 }
 
 
 Tree.prototype.insertNode = function insertNode<K, V>(node: TreeNode<K, V> | null, key: K, value: V): TreeNode<K, V> | null {
     if (node == null) {
-        return { key: key, value: value, left: null, right: null }
+        return {key: key, value: value, left: null, right: null}
     }
 
     if (key < node.key) {
@@ -72,35 +76,18 @@ Tree.prototype.delMin = function delMin<K, V>(node: TreeNode<K, V>): TreeNode<K,
 }
 
 
-const BinarySearchTree = function <K, V>(): BinarySearchTree<K, V> {
-
-
-    const insert = (key: K, value: V): void => {
-        this.root = this.insertNode(this.root, key, value);
-    }
-
-    const deleteNode = (key: K): void => {
-        if (this.root == null) {
-            return;
-        }
-        this.root = this.deleteTreeNode(this.root, key);
-    }
-
-    return {
-        getRoot: () => { return this.root },
-        insert: insert,
-        deleteNode: deleteNode
-    }
-};
-
-
-const BasicBinarySearchTree = function <K, V>() {
-    const newObj = Object.assign(Object.create(Tree.prototype), { root: null })
-    return {
-        newInstance: BinarySearchTree.bind(newObj)
-    };
+const BinarySearchTree = function <K, V>(): BinarySearchTreeModel<K, V> {
+    // @ts-ignore
+    return new Tree<K, V>();
 }
 
+
+export const KdTree = function (): void {
+
+}
+
+
+KdTree.bind(Tree.prototype);
 
 
 export interface TreeNode<K, V> {
@@ -108,12 +95,12 @@ export interface TreeNode<K, V> {
     value: V
     left: TreeNode<K, V> | null,
     right: TreeNode<K, V> | null,
-};
+}
 
-interface BinarySearchTree<K, V> {
+interface BinarySearchTreeModel<K, V> {
     getRoot: () => TreeNode<K, V> | null
     insert: (key: K, value: V) => void
     deleteNode: (key: K) => void
 }
 
-export { BasicBinarySearchTree }
+export { BinarySearchTree }

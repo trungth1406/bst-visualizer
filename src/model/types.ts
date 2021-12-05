@@ -1,4 +1,4 @@
-import { TreeNode } from "./bst";
+import {TreeNode} from "./bst";
 
 export interface ViewNodeProps {
     node: TreeNode<any, any>,
@@ -13,11 +13,17 @@ export interface ViewProps {
 }
 
 export interface Position {
-    x: number 
-    y: number 
+    x: number
+    y: number
 }
 
 export interface Dimension {
     width: number | undefined;
     height: number | undefined;
+}
+
+export interface CursorNodePosition {
+    x: number
+    y: number
+    value: any
 }

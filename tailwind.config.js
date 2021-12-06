@@ -26,13 +26,19 @@ module.exports = {
             transform: 'scale(0)',
             display: 'none'
           }
+        },
+        loading: {
+          to: {
+              transform: 'rotate(1turn)'
+          }
         }
       }
-      ,
+    ,
       animation: {
         pingone: 'pingone 0.25s ease-in 1',
         remove: 'remove 1s ease-in 1',
-        spin: 'spin 5s linear infinite;'
+        spin: 'spin 5s linear infinite;', 
+        loading: 'loading 2s linear infinite'
       }
     },
   },

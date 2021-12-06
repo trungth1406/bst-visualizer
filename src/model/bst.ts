@@ -3,7 +3,12 @@
  * @this Tree
  */
 
+import {Point, Point2D, Rectangle, Rectangle2D} from "./point";
+
+
 const Tree = function <K, V>(): any {
+
+    this.root = null;
 
     this.insert = function (key: K, value: V): void {
         this.root = this.insertNode(this.root, key, value);
@@ -82,12 +87,87 @@ const BinarySearchTree = function <K, V>(): BinarySearchTreeModel<K, V> {
 }
 
 
-export const KdTree = function (): void {
+export const KdTree = function () {
+    let root: KdTreeNode<Point, any> | null;
+
+    const insert = function (point: Point) {
+        root = insertNode(root, null, point, false, false);
+    }
+
+    const insertNode = function (currentNode: KdTreeNode<Point, any> | null,
+                                 parentNode: KdTreeNode<Point, any> | null,
+                                 point: Point, isHorizontal: boolean, isLeftOrDown: boolean): KdTreeNode<Point, any> | null {
+        // @ts-ignore
+        const point2D = new Point2D(point.x, point.y);
+        if (currentNode == null) {
+            let rectHv;
+            if (!parentNode) {
+                rectHv = Rectangle(0, 0, 1, 1);
+            } else if (isHorizontal) {
+                const parentNodeRect = parentNode.rect;
+                const parentPoint = parentNode.point;
+                if (isLeftOrDown) {
+                    rectHv = Rectangle(
+                        parentNodeRect?.xMin, parentNodeRect?.yMin,
+                        parentPoint.x, parentNodeRect?.yMax
+                    );
+                } else {
+                    rectHv = Rectangle(
+                        parentPoint?.x, parentNodeRect?.yMin,
+                        parentNodeRect?.xMax, parentNodeRect?.yMax
+                    );
+                }
+
+            } else {
+                const parentNodeRect = parentNode.rect;
+                const parentPoint = parentNode.point;
+                if (isLeftOrDown) {
+                    rectHv = Rectangle(
+                        parentNodeRect?.xMin, parentNodeRect?.yMin,
+                        parentNodeRect?.xMax, parentPoint?.y
+                    );
+                } else {
+                    rectHv = Rectangle(
+                        parentPoint?.x, parentPoint?.y,
+                        parentNodeRect?.xMax, parentNodeRect?.yMax
+                    );
+                }
+
+            }
+            return {
+                point: point,
+                rect: rectHv,
+                left: null,
+                right: null
+            }
+        }
+
+        if (isHorizontal) {
+            if (point.y < currentNode.point.y) {
+                currentNode.left = insertNode(currentNode.left, parentNode, point, false, true);
+            } else {
+                currentNode.right = insertNode(currentNode.right, parentNode, point, false, false);
+            }
+        } else {
+            if (point.x < currentNode.point.x) {
+                currentNode.left = insertNode(currentNode.left, parentNode, point, true, true);
+            } else {
+                currentNode.right = insertNode(currentNode.right, parentNode, point, true, false);
+            }
+        }
+        return currentNode;
+    }
+
+
+    return {
+        getRoot: () => {
+            return root
+        },
+        insert: insert,
+    }
+
 
 }
-
-
-KdTree.bind(Tree.prototype);
 
 
 export interface TreeNode<K, V> {
@@ -97,10 +177,18 @@ export interface TreeNode<K, V> {
     right: TreeNode<K, V> | null,
 }
 
+export interface KdTreeNode<K, V> {
+    rect: Rectangle2D | null,
+    point: Point,
+    left: KdTreeNode<K, V> | null,
+    right: KdTreeNode<K, V> | null,
+}
+
+
 interface BinarySearchTreeModel<K, V> {
     getRoot: () => TreeNode<K, V> | null
     insert: (key: K, value: V) => void
     deleteNode: (key: K) => void
 }
 
-export { BinarySearchTree }
+export {BinarySearchTree};

@@ -185,3 +185,13 @@ input:active {
     width: 100%;
     height: 100%;
 }
+
+
+circle {
+    cursor: pointer;
+
+}
+
+text{
+    cursor: pointer;
+}

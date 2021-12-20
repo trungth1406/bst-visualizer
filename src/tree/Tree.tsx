@@ -3,6 +3,7 @@ import {KdTree, TreeNode} from '../model/bst';
 import Node from "./Node";
 import {CursorNodePosition, ViewNodeProps} from "../model/types";
 import {BehaviorSubject, last, take, takeWhile} from "rxjs";
+import {generateSvgPoint} from "../model/utils";
 
 const kdTree = KdTree();
 
@@ -12,26 +13,33 @@ function Tree(props: { treeSubject: BehaviorSubject<CursorNodePosition> }) {
 
 
     useEffect(() => {
-        console.log("First time")
         props.treeSubject
             .subscribe(onNewRootNodeValueReceived())
     }, []);
 
 
     const onNewRootNodeValueReceived = function () {
+        let isHorizontal = false;
         return (next: CursorNodePosition) => {
             if (next.x && next.y) {
+                let boundingClientRect = nodeContainer.current.getBoundingClientRect();
                 const newNode: TreeNode<any, any> = {
                     key: next.value, value: next.value, left: null, right: null,
 
                 }
-                kdTree.insert({x: next.x, y: next.y})
-                // Add new node to rootNodes array
-                let boundingClientRect = nodeContainer.current.getBoundingClientRect();
+                let relativeSvgPoint = generateSvgPoint(nodeContainer.current, nodeContainer.current, next.x, next.y);
+                kdTree.insert({x: relativeSvgPoint.x, y: relativeSvgPoint.y});
+
                 setNodeArrays((prevState) => {
-                    return [...prevState, generateViewNode(newNode, next, boundingClientRect)]
+                    return [...prevState, generateViewNode(newNode, {
+                        value: newNode.value,
+                        x: relativeSvgPoint.x,
+                        y: relativeSvgPoint.y
+                    }, boundingClientRect)]
                 });
-                console.log(kdTree.getRoot());
+                console.log(kdTree.closest({x: relativeSvgPoint.x, y: relativeSvgPoint.y}));
+                // kdTree.draw(nodeContainer.current);
+                isHorizontal = !isHorizontal;
             }
         };
     }

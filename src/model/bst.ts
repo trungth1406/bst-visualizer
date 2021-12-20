@@ -1,3 +1,6 @@
+// tell me a joke
+
+
 /**
  * @constructor
  * @this Tree
@@ -96,66 +99,137 @@ export const KdTree = function () {
 
     const insertNode = function (currentNode: KdTreeNode<Point, any> | null,
                                  parentNode: KdTreeNode<Point, any> | null,
-                                 point: Point, isHorizontal: boolean, isLeftOrDown: boolean): KdTreeNode<Point, any> | null {
-        // @ts-ignore
-        const point2D = new Point2D(point.x, point.y);
-        if (currentNode == null) {
-            let rectHv;
-            if (!parentNode) {
-                rectHv = Rectangle(0, 0, 1, 1);
-            } else if (isHorizontal) {
-                const parentNodeRect = parentNode.rect;
-                const parentPoint = parentNode.point;
-                if (isLeftOrDown) {
-                    rectHv = Rectangle(
-                        parentNodeRect?.xMin, parentNodeRect?.yMin,
-                        parentPoint.x, parentNodeRect?.yMax
-                    );
-                } else {
-                    rectHv = Rectangle(
-                        parentPoint?.x, parentNodeRect?.yMin,
-                        parentNodeRect?.xMax, parentNodeRect?.yMax
-                    );
-                }
+                                 point: Point, isHorizontalCompare: boolean, isLeftOrBottom: boolean): KdTreeNode<Point, any> | null {
 
+        // If the tree is empty and  parent is null, then this is the root node with Rectangle(0, 0, 1, 1)
+        if (currentNode == null) {
+            let rect: Rectangle2D | null;
+            if (parentNode == null) {
+                rect = Rectangle(0, 0, 1, 1);
             } else {
-                const parentNodeRect = parentNode.rect;
-                const parentPoint = parentNode.point;
-                if (isLeftOrDown) {
-                    rectHv = Rectangle(
-                        parentNodeRect?.xMin, parentNodeRect?.yMin,
-                        parentNodeRect?.xMax, parentPoint?.y
-                    );
+
+                if (isHorizontalCompare) {
+                    // isLeft
+                    if (isLeftOrBottom) {
+                        rect = Rectangle(parentNode.containingRect.xMin, parentNode.containingRect.yMin, parentNode.point.x, parentNode.containingRect.yMax);
+                    } else {
+                        rect = Rectangle(parentNode.point.x, parentNode.containingRect.yMin, parentNode.containingRect.xMax, parentNode.containingRect.yMax);
+                    }
                 } else {
-                    rectHv = Rectangle(
-                        parentPoint?.x, parentPoint?.y,
-                        parentNodeRect?.xMax, parentNodeRect?.yMax
-                    );
+                    if (isLeftOrBottom) {
+                        rect = Rectangle(parentNode.containingRect.xMin, parentNode.containingRect.yMin, parentNode.containingRect.xMax, parentNode.point.y);
+                    } else {
+                        rect = Rectangle(parentNode.containingRect.xMin, parentNode.point.y, parentNode.containingRect.xMax, parentNode.containingRect.yMax);
+                    }
                 }
 
             }
+
             return {
                 point: point,
-                rect: rectHv,
                 left: null,
-                right: null
+                right: null,
+                containingRect: rect
             }
+
         }
 
-        if (isHorizontal) {
-            if (point.y < currentNode.point.y) {
-                currentNode.left = insertNode(currentNode.left, parentNode, point, false, true);
+        if (isHorizontalCompare) {
+            if (point.y > currentNode.point.y) {
+                currentNode.left = insertNode(currentNode.left, currentNode, point, false, true);
             } else {
-                currentNode.right = insertNode(currentNode.right, parentNode, point, false, false);
+                currentNode.right = insertNode(currentNode.right, currentNode, point, false, false);
             }
         } else {
             if (point.x < currentNode.point.x) {
-                currentNode.left = insertNode(currentNode.left, parentNode, point, true, true);
+                currentNode.left = insertNode(currentNode.left, currentNode, point, true, true);
             } else {
-                currentNode.right = insertNode(currentNode.right, parentNode, point, true, false);
+                currentNode.right = insertNode(currentNode.right, currentNode, point, true, false);
             }
         }
+
         return currentNode;
+    }
+
+    const closest = function (point: Point): KdTreeNode<Point, any> | null {
+        return closestNode(root, root, point, false, false);
+    }
+
+    const closestNode = function (currentNode: KdTreeNode<Point, any> | null, currentClosest: KdTreeNode<Point, any> | null,
+                                  point: Point, isHorizontalCompare: boolean, isLeftOrBottom: boolean): KdTreeNode<Point, any> | null {
+        if (currentNode == null) {
+            return currentClosest;
+        }
+        const currentClosestPoint = Point2D(currentClosest?.point.x! , currentClosest?.point.y!);
+        const currentNodePoint = Point2D(currentNode?.point.x! , currentNode?.point.y!);
+        const point2D = Point2D(point.x, point.y);
+        if(currentNodePoint.distanceTo(point2D) < currentClosestPoint.distanceTo(point2D)) {
+            currentClosest = currentNode;
+        }
+
+
+        if (isHorizontalCompare) {
+            if (point.x < currentNode.point.x) {
+                return closestNode(currentNode.left, currentClosest, point, false, true);
+            } else {
+                return closestNode(currentNode.right, currentClosest, point, false, false);
+            }
+        } else {
+            if (point.y < currentNode.point.y) {
+                return closestNode(currentNode.left, currentClosest, point, true, true);
+            } else {
+                return closestNode(currentNode.right, currentClosest, point, true, false);
+            }
+        }
+    }
+
+
+    const draw = function (svg: SVGSVGElement) {
+        if (root == null) {
+            return;
+        }
+        drawNodeLine(svg, root, false);
+    }
+
+    const drawNodeLine = function (svg: SVGSVGElement, currentNode: KdTreeNode<Point, any>, isHorizontalCompare: boolean) {
+        drawSvgLine(svg, currentNode, isHorizontalCompare);
+
+        if (isHorizontalCompare) {
+            if (currentNode.left) {
+                drawNodeLine(svg, currentNode.left, false);
+            }
+            if (currentNode.right) {
+                drawNodeLine(svg, currentNode.right, false);
+
+            }
+        } else {
+            if (currentNode.left) {
+                drawNodeLine(svg, currentNode.left, true);
+            }
+            if (currentNode.right) {
+                drawNodeLine(svg, currentNode.right, true);
+            }
+
+        }
+    }
+
+
+    const drawSvgLine = function (svg: SVGSVGElement, treeNode: KdTreeNode<Point, any>, isHorizontalCompare: boolean) {
+        let color = isHorizontalCompare ? "red" : "blue";
+        const centerPoint = Point2D(treeNode.point.x, treeNode.point.y);
+        if (isHorizontalCompare) {
+            centerPoint.drawTo(svg, {x: treeNode.containingRect.xMin!, y: centerPoint.y}, color);
+            centerPoint.drawTo(svg, {
+                x: treeNode.containingRect.xMax! === 1 ? svg.width.baseVal.value : treeNode.containingRect.xMax!,
+                y: centerPoint.y
+            }, color);
+        } else {
+            centerPoint.drawTo(svg, {x: centerPoint.x, y: treeNode.containingRect.yMax!}, color);
+            centerPoint.drawTo(svg, {
+                x: centerPoint.x,
+                y: treeNode.containingRect.yMin! === 0 ? svg.height.baseVal.value : treeNode.containingRect.yMin!
+            }, color);
+        }
     }
 
 
@@ -164,6 +238,8 @@ export const KdTree = function () {
             return root
         },
         insert: insert,
+        draw: draw,
+        closest: closest
     }
 
 
@@ -178,7 +254,7 @@ export interface TreeNode<K, V> {
 }
 
 export interface KdTreeNode<K, V> {
-    rect: Rectangle2D | null,
+    containingRect: Rectangle2D,
     point: Point,
     left: KdTreeNode<K, V> | null,
     right: KdTreeNode<K, V> | null,

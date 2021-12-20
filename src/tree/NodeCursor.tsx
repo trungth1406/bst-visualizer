@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
-import { BehaviorSubject } from "rxjs";
-import { CursorNodePosition, Position } from "../model/types";
+import React, {useEffect, useRef, useState} from "react";
+import {BehaviorSubject} from "rxjs";
+import {CursorNodePosition, Position} from "../model/types";
 
 
 function NodeCursor(props: { treeSubject: BehaviorSubject<CursorNodePosition> }) {
@@ -8,8 +8,6 @@ function NodeCursor(props: { treeSubject: BehaviorSubject<CursorNodePosition> })
     const [toolTip, setToolTip] = useState('Enter a key value');
     const [keyInput, setKeyInput] = useState('');
     const nodeCursorPos = useRef(null);
-
-
 
 
     const onNodeDrop = function (e: any) {
@@ -45,7 +43,7 @@ function NodeCursor(props: { treeSubject: BehaviorSubject<CursorNodePosition> })
 
         valueInput.style.display = 'none';
         nodeCursor.style.transform = '';
-        if(nodeCursor.classList.contains('remove-node')) nodeCursor.classList.remove('remove-node')
+        if (nodeCursor.classList.contains('remove-node')) nodeCursor.classList.remove('remove-node')
         nodeCursor.style.display = 'flex';
         nodeCursor.style.top = (event.pageY) + "px"
         nodeCursor.style.left = (event.pageX) + "px"
@@ -53,7 +51,7 @@ function NodeCursor(props: { treeSubject: BehaviorSubject<CursorNodePosition> })
         nodeCursor.addEventListener('click', dropNode, true);
 
         function dropNode(e: any) {
-            window.removeEventListener('mousemove', cursorMove , true);
+            window.removeEventListener('mousemove', cursorMove, true);
         }
 
         function cursorMove(e: any) {
@@ -68,7 +66,6 @@ function NodeCursor(props: { treeSubject: BehaviorSubject<CursorNodePosition> })
 
     const onNodeKeyChange = function (event: any) {
         let circlePos: any = nodeCursorPos.current;
-        console.log(event.key)
         if (circlePos && (event.key === 'Enter')) {
             let boundingClientRect = circlePos.getBoundingClientRect();
             const divWidth = boundingClientRect.width;
@@ -78,13 +75,13 @@ function NodeCursor(props: { treeSubject: BehaviorSubject<CursorNodePosition> })
                 value: keyInput
             });
 
-            if(event.key === 'Escape'){
+            if (event.key === 'Escape') {
                 reattachNodeCursor(event);
             }
         }
     }
 
-    const onValueUpdate = function ({ target }: any) {
+    const onValueUpdate = function ({target}: any) {
         setKeyInput(target.value);
         setToolTip('Enter to draw the node');
     }
@@ -94,7 +91,7 @@ function NodeCursor(props: { treeSubject: BehaviorSubject<CursorNodePosition> })
     }
 
     const onEscapeKeyPressed = function (e: any) {
-        if(e.key === 'Escape'){
+        if (e.key === 'Escape') {
             reattachNodeCursor(e);
         }
     }
@@ -104,12 +101,12 @@ function NodeCursor(props: { treeSubject: BehaviorSubject<CursorNodePosition> })
             {/*<div className ="tooltip">{toolTip}</div>*/}
             <div className="cursor-content">
                 <input className="value-input"
-                    placeholder="Key"
-                    onChange={onValueUpdate}
-                    onKeyPress={onNodeKeyChange}
-                    onKeyDown={onEscapeKeyPressed}
-                    value={keyInput} />
-                <div className="spin-circle" />
+                       placeholder="Key"
+                       onChange={onValueUpdate}
+                       onKeyPress={onNodeKeyChange}
+                       onKeyDown={onEscapeKeyPressed}
+                       value={keyInput}/>
+                <div className="spin-circle"/>
             </div>
         </div>);
 }

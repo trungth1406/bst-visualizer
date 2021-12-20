@@ -1,20 +1,32 @@
 import React, {useEffect, useRef, useState} from "react";
 import {KdTree, TreeNode} from '../model/bst';
 import Node from "./Node";
-import {CursorNodePosition, ViewNodeProps} from "../model/types";
+import {CursorNodePosition, Position, ViewNodeProps} from "../model/types";
 import {BehaviorSubject, last, take, takeWhile} from "rxjs";
 import {generateSvgPoint} from "../model/utils";
 
 const kdTree = KdTree();
 
-function Tree(props: { treeSubject: BehaviorSubject<CursorNodePosition> }) {
+function Tree(props: { treeSubject: BehaviorSubject<CursorNodePosition>, cursorPosition: BehaviorSubject<Position> }) {
     const nodeContainer: any = useRef(null);
     let [rootNodes, setNodeArrays] = useState<ViewNodeProps[]>([]);
+    let [currentClosest, setCurrentClosest] = useState<Position>();
 
 
     useEffect(() => {
         props.treeSubject
             .subscribe(onNewRootNodeValueReceived())
+        props.cursorPosition
+            .subscribe(value => {
+                let cursorRelativePoint = generateSvgPoint(nodeContainer.current, nodeContainer.current, value.x, value.y);
+                let closest = kdTree.closest({x: cursorRelativePoint.x, y: cursorRelativePoint.y});
+                if (closest) {
+                    setCurrentClosest({
+                        x: closest.point.x,
+                        y: closest.point.y,
+                    });
+                }
+            })
     }, []);
 
 
@@ -37,7 +49,7 @@ function Tree(props: { treeSubject: BehaviorSubject<CursorNodePosition> }) {
                         y: relativeSvgPoint.y
                     }, boundingClientRect)]
                 });
-                console.log(kdTree.closest({x: relativeSvgPoint.x, y: relativeSvgPoint.y}));
+
                 // kdTree.draw(nodeContainer.current);
                 isHorizontal = !isHorizontal;
             }
@@ -63,7 +75,7 @@ function Tree(props: { treeSubject: BehaviorSubject<CursorNodePosition> }) {
             {
                 rootNodes.map((element: any, index: any) => {
                     return <Node key={index} id={index} nodeProps={element} parentProps={element.parentNode}
-                                 container={nodeContainer}/>;
+                                 container={nodeContainer} currentClosest={currentClosest}/>;
                 })
             }
         </svg>

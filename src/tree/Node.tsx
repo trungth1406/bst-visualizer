@@ -13,7 +13,7 @@ const toSvgCoordinates = function (container: any, element: any, x: number, y: n
     return svgPoint.matrixTransform(element.getScreenCTM().inverse());
 }
 
-function Node(props: { id: number, nodeProps: ViewNodeProps, parentProps: ViewNodeProps, container: any }) {
+function Node(props: { id: number, nodeProps: ViewNodeProps, parentProps: ViewNodeProps, container: any, currentClosest: Position | undefined }) {
     let nodeProps = props.nodeProps;
     let parentContainer = findDOMNode(props.container.current) as Element;
 
@@ -24,6 +24,7 @@ function Node(props: { id: number, nodeProps: ViewNodeProps, parentProps: ViewNo
 
 
     const [isDragging, setIsDragging] = useState<boolean>(false);
+    const [isClosest, setIsClosest] = useState<boolean>(false);
     // const {x,y} = toSvgCoordinates(props.container.current, props.container.current, nodeProps.viewProps.position.x, nodeProps.viewProps.position.y);
 
     let [currentPos, setCurrentPos] = useState<NodePosition>(
@@ -42,12 +43,16 @@ function Node(props: { id: number, nodeProps: ViewNodeProps, parentProps: ViewNo
             pos: {
                 x: nodeProps.viewProps.position.x, y: nodeProps.viewProps.position.y
             },
-            mousePos: { x: 0, y: 0 },
+            mousePos: {x: 0, y: 0},
             isDragging: false
         });
 
     }, [nodeProps.viewProps.position]);
 
+    useEffect(() => {
+        setIsClosest(props.currentClosest?.x === currentPos.pos.x)
+
+    }, [props.currentClosest])
 
 
     useEffect(() => {
@@ -90,21 +95,21 @@ function Node(props: { id: number, nodeProps: ViewNodeProps, parentProps: ViewNo
     }
 
     return (
-            <g>
-                <circle id={"node-" + props.id} className="node"
-                        onMouseDown={onMouseDown}
-                        ref={nodeRect}
-                        cx={currentPos.pos.x} cy={currentPos.pos.y} r={50} color="red"
-                        fill="white" stroke="#5c6274"
-                >
+        <g>
+            <circle id={"node-" + props.id} className="node"
+                    onMouseDown={onMouseDown}
+                    ref={nodeRect}
+                    cx={currentPos.pos.x} cy={currentPos.pos.y} r={50} color="red"
+                    fill={'white'} strokeWidth={2}
+            >
 
-                </circle>
-                <text onMouseDown={onMouseDown} ref={textRef} className="node-text" x={currentPos.pos.x}
-                      y={currentPos.pos.y} textAnchor="middle" strokeWidth="12px" dy=".3em">
-                    {nodeProps == null ? '' : nodeProps.node.key}
-                </text>
-                {/* <ConnectedLine container={props.container} parentRef={parentProps} childRef={nodeProps} nodePos={currentPos} /> */}
-            </g>
+            </circle>
+            <text onMouseDown={onMouseDown} ref={textRef} className="node-text" x={currentPos.pos.x}
+                  y={currentPos.pos.y} textAnchor="middle" strokeWidth="12px" fontSize="3rem">
+                {isClosest ? 'Drop a node here to add' : nodeProps.node.key}
+            </text>
+            {/* <ConnectedLine container={props.container} parentRef={parentProps} childRef={nodeProps} nodePos={currentPos} /> */}
+        </g>
     );
 }
 

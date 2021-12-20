@@ -6,6 +6,27 @@ module.exports = {
   darkMode: false, // or 'media' or 'class'
   theme: {
     extend: {
+      colors:{
+        gray:{
+          1000: '#AEB1BD',
+          1001: '#939097',
+        },
+        orange:{
+          1000: '#FFDC86'
+        },
+        green: {
+          1000: '#7FD1AE'
+        },
+        blue: {
+          1000: '#B7D3F4'
+        },
+        red: {
+          1000: '#FFC9AE'
+        },
+        yellow: {
+          1000: '#FFEECA'
+        },
+      },
       keyframes: {
         pingone: {
           '0%': {

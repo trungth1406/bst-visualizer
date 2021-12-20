@@ -160,27 +160,27 @@ export const KdTree = function () {
         if (currentNode == null) {
             return currentClosest;
         }
-        const currentClosestPoint = Point2D(currentClosest?.point.x! , currentClosest?.point.y!);
-        const currentNodePoint = Point2D(currentNode?.point.x! , currentNode?.point.y!);
+        const currentClosestPoint = Point2D(currentClosest?.point.x!, currentClosest?.point.y!);
+        const currentNodePoint = Point2D(currentNode?.point.x!, currentNode?.point.y!);
         const point2D = Point2D(point.x, point.y);
-        if(currentNodePoint.distanceTo(point2D) < currentClosestPoint.distanceTo(point2D)) {
+        if (point2D.distanceTo(currentNodePoint) < point2D.distanceTo(currentClosestPoint)) {
             currentClosest = currentNode;
         }
-
-
         if (isHorizontalCompare) {
-            if (point.x < currentNode.point.x) {
+            if (point.y > currentNode.point.y) {
                 return closestNode(currentNode.left, currentClosest, point, false, true);
             } else {
                 return closestNode(currentNode.right, currentClosest, point, false, false);
             }
         } else {
-            if (point.y < currentNode.point.y) {
+            if (point.x < currentNode.point.x) {
                 return closestNode(currentNode.left, currentClosest, point, true, true);
             } else {
                 return closestNode(currentNode.right, currentClosest, point, true, false);
             }
         }
+
+        return currentClosest;
     }
 
 

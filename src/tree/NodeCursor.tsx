@@ -3,7 +3,7 @@ import {BehaviorSubject} from "rxjs";
 import {CursorNodePosition, Position} from "../model/types";
 
 
-function NodeCursor(props: { treeSubject: BehaviorSubject<CursorNodePosition> }) {
+function NodeCursor(props: { treeSubject: BehaviorSubject<CursorNodePosition> , cursorPosition: BehaviorSubject<Position> }) {
 
     const [toolTip, setToolTip] = useState('Enter a key value');
     const [keyInput, setKeyInput] = useState('');
@@ -58,6 +58,7 @@ function NodeCursor(props: { treeSubject: BehaviorSubject<CursorNodePosition> })
             if (nodeCursor) {
                 nodeCursor.style.top = (e.pageY) + "px"
                 nodeCursor.style.left = (e.pageX) + "px"
+                props.cursorPosition.next({x: e.pageX, y: e.pageY});
             }
         }
 

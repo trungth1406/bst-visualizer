@@ -13,10 +13,15 @@ function Diagram() {
         value: ''
     });
 
+    const cursorPosition = new BehaviorSubject<Position>({
+        x: 0,
+        y: 0
+    });
+
     return (
         <div className="diagram-container">
-            <Tree treeSubject = {treeSubject} />
-            <NodeCursor treeSubject={treeSubject}/>
+            <Tree treeSubject={treeSubject} cursorPosition={cursorPosition}/>
+            <NodeCursor treeSubject={treeSubject} cursorPosition={cursorPosition}/>
         </div>)
 }
 

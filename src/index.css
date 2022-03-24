@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-html{
+html,body {
     font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif       
 }
 
@@ -14,7 +14,7 @@ html{
     }
 
     .sidebar-container{
-        @apply  relative  min-w-full max-w-full col-start-1 col-end-2 top-0 left-0 h-screen bg-gray-600 shadow-xl;
+        @apply  relative  min-w-full max-w-full col-start-1 col-end-2 top-0 left-0 h-screen bg-gray-1000 shadow-xl;
     }
 
     .menu-container{
@@ -22,7 +22,7 @@ html{
     }
 
     .icon{
-        @apply w-14 h-14  flex items-center justify-around gap-3   mt-2 mb-2 bg-gray-800
+        @apply w-14 h-14  flex items-center justify-around gap-3   mt-2 mb-2 bg-gray-1001
          border-solid shadow-lg mix-blend-hard-light rounded-3xl hover:rounded-xl transition-all
     }
     
@@ -37,13 +37,13 @@ html{
         @apply  flex items-center gap-4 content-around
                 max-w-screen-sm  mt-3 
                 rounded-full w-9/12 h-16
-                 bg-gray-500 
+                 bg-gray-1000
                  p-2 
        
     }
 
     .action-container{
-        @apply flex items-center justify-around bg-gray-800
+        @apply flex items-center justify-around bg-gray-1001
                  w-12 h-12 rounded-3xl transition-all duration-300 ease-linear
                  cursor-pointer relative
     }
@@ -58,17 +58,17 @@ html{
     }
 
     .action-container:nth-child(1){
-        @apply hover:bg-green-500 cursor-pointer
+        @apply hover:bg-green-1000 cursor-pointer
     }
     
     .action-container:nth-child(2){
-        @apply hover:bg-red-500
+        @apply hover:bg-blue-1000
     }
     .action-container:nth-child(3){
-        @apply hover:bg-blue-500
+        @apply hover:bg-red-1000
     }
     .action-container:nth-child(4){
-        @apply hover:bg-yellow-500
+        @apply hover:bg-yellow-1000
     }
 
 
@@ -90,26 +90,24 @@ html{
    
 
     .node{
-        @apply cursor-pointer 
+        @apply cursor-pointer border-solid border-2 border-gray-1001 
     }
 
 
     .node-text{
-        @apply text-sm
+        @apply text-xl
     }
 
     .node-cursor {
-        @apply rounded-full absolute w-14 h-14 border-dashed  border-gray-600 z-10 hidden
-               transition-transform animate-pingone bg-white
+        @apply rounded-full absolute w-14 h-14  z-10 hidden
+               transition-transform animate-pingone bg-transparent border-dashed
     }
 
     .remove-node{
         @apply  transition-transform animate-remove
     }
 
-    .filled-node{
-        @apply bg-white 
-    }
+    
 
     .input-holder{
         @apply   w-6 
@@ -134,10 +132,24 @@ html{
     }
 
     .spin-circle{
-        @apply  
-        top-0 bottom-0 right-0 left-0 mt-auto border-gray-600  rounded-full
-        animate-spin absolute 
+        @apply flex  justify-center top-0 bottom-0 right-0 left-0 mt-auto border-none rounded-full absolute
     }
+    
+    /*.spin-circle::after{*/
+    /*    @apply animate-loading  border-gray-400*/
+    /*}*/
+
+    .node-hint{
+        @apply text-gray-400 animate-pulse
+    }
+
+    .filled-add{
+        @apply   animate-ping  opacity-25 bg-green-300
+    }
+
+    
+
+    
 }
 
 .toolbar-container > * {
@@ -154,17 +166,21 @@ html{
 
 
 input{
-    background: transparent;
+    opacity: .75;
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+    outline: none;
+    cursor: pointer;
 }
 
 input:focus{
-    outline:  none;
-    background: transparent;
+    outline: none;
+    opacity: .75;
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
 }
 
-input:active {
-    background: transparent;
-}
+/*input:active {*/
+/*    background: transparent;*/
+/*}*/
 
 .tooltip{
     font-size: 8px !important;
@@ -172,4 +188,45 @@ input:active {
 
 .spin-circle{
     border-width: 1px;
+}
+
+/*.spin-circle::after{*/
+/*    content: '';*/
+/*    border: 1px solid;*/
+
+/*    border-radius: 9999px;*/
+/*    width: 100%;*/
+/*    height: 100%;*/
+/*}*/
+
+
+circle {
+    cursor: pointer;
+
+}
+
+text{
+    cursor: pointer;
+}
+
+
+.node{
+    stroke: #AEB1BD;
+}
+
+
+.circle{
+    background: white;
+    height: 100%;
+    border-radius: 100%;
+    text-align: center;
+    font-size: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #AEB1BD;
+}
+
+.spin-circle{
+
 }

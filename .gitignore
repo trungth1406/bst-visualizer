@@ -145,5 +145,3 @@ package-lock.json
 package.json
 .idea/*.xml
 
-.idea
-package-log.json

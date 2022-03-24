@@ -19,7 +19,7 @@ function InteractiveToolBar() {
             nodeCursor.classList.remove('filled-node');
         }
         
-        valueInput.style.display = 'none';
+        // valueInput.style.display = 'none';
         nodeCursor.style.transform = '';
         if(nodeCursor.classList.contains('remove-node')) nodeCursor.classList.remove('remove-node')
         nodeCursor.style.display = 'flex';

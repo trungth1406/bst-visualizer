@@ -1,89 +1,91 @@
-
-import { MouseEventHandler, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { findDOMNode } from 'react-dom';
+import {MouseEventHandler, useCallback, useEffect, useLayoutEffect, useRef, useState} from 'react';
+import {findDOMNode} from 'react-dom';
 import ConnectedLine from './ConnectedLine/ConnectedLine';
-import { Position, ViewNodeProps } from './types';
-import { generateSvgPoint } from './utils';
+import {BSTViewNodeProps, CursorNodePosition, Position, ViewNodeProps} from '../model/types';
+import {BehaviorSubject, Subscription, takeWhile, zip} from "rxjs";
+import {htmlCoordinateToSvgCoordinate, isIntersected, svgCoordinateToHtmlCoordinate} from "../model/utils";
+import NodeCursor from './NodeCursor';
+import {TreeNode} from "../model/bst";
 
 
-
-
-function Node(props: { id: number, nodeProps: ViewNodeProps, parentProps: ViewNodeProps, container: any }) {
+function Node(props: {
+    id: number, nodeProps: TreeNode<number, any> | null, parentProps: TreeNode<number, any>| null,
+    container: any, currentClosest: Position | undefined,
+    cursorPos: BehaviorSubject<Position>, closestNode: BehaviorSubject<Position>
+}) {
     let nodeProps = props.nodeProps;
-    let treeContainer = props.container;
-    let parentProps = props.parentProps;
+    let nodePosition = nodeProps?.viewProps;
+    let parentContainer = findDOMNode(props.container.current) as Element;
+
     let nodeRect: any = useRef(null);
+    let textRef: any = useRef(null);
+    let queryNode: SVGCircleElement = findDOMNode(nodeRect.current) as SVGCircleElement;
+    let queryText: SVGCircleElement = findDOMNode(textRef.current) as SVGCircleElement;
 
 
-
+    const [isDragging, setIsDragging] = useState<boolean>(false);
+    const [isClosest, setIsClosest] = useState<boolean>(false);
 
     let [currentPos, setCurrentPos] = useState<NodePosition>(
         {
             pos:
-            {
-                x: nodeProps.viewProps.position.x,
-                y: nodeProps.viewProps.position.y
-            },
-            mousePos: { x: 0, y: 0 },
+                {
+                    x: 0,
+                    y: 0
+                },
+            mousePos: {x: 0, y: 0},
             isDragging: false
         });
 
 
-    useLayoutEffect(() => {
-        let relativeSvgPoint = generateSvgPoint(treeContainer.current, nodeRect.current, nodeProps.viewProps.position.x, nodeProps.viewProps.position.y);
-        animateCircle();
+    useEffect(() => {
         setCurrentPos({
             pos: {
-                x: relativeSvgPoint.x, y: relativeSvgPoint.y
+                x: nodePosition!.x, y: nodePosition!.y
             },
-            mousePos: { x: 0, y: 0 },
+            mousePos: {x: 0, y: 0},
             isDragging: false
         });
+    }, [nodePosition]);
 
-    }, [props])
+    useEffect(() => {
+        let cursorNodePosition: Subscription;
+        if (!(props.nodeProps!.parent) && props.currentClosest) {
+            setIsClosest(props.currentClosest.x === nodePosition?.x && props.currentClosest.y === nodePosition.y);
+        }
+        return () => {
+            if (cursorNodePosition) {
+                cursorNodePosition.unsubscribe();
+            }
+        }
+    }, [props.currentClosest])
 
+
+    useEffect(() => {
+        if (isDragging) {
+            parentContainer.addEventListener('mousemove', cursorMove, true)
+        }
+        return () => {
+            parentContainer.removeEventListener('mousemove', cursorMove, true)
+        }
+    }, [isDragging])
 
 
     const onMouseDown = function (e: any) {
-        if (e.button !== 0) return
-        let pos = findDOMNode(props.container.current) as Element;
-        let boundingRect = pos.getBoundingClientRect();
-        setCurrentPos({
-            pos: currentPos.pos,
-            mousePos: {
-                x: e.clientX - boundingRect?.left,
-                y: e.clientY - boundingRect?.top
-            },
-            isDragging: true
-        })
-        e.stopPropagation();
-        e.preventDefault();
+        setIsDragging(!isDragging);
     }
 
-    const onMouseUp = function (e: any) {
-        setCurrentPos({ ...currentPos, isDragging: false })
-        e.stopPropagation();
-        e.preventDefault();
+
+    const cursorMove = function (event: any) {
+        if (queryNode) {
+            let boundingRect = parentContainer.getBoundingClientRect();
+            queryNode.setAttribute('cx', String(event.clientX - boundingRect?.left));
+            queryNode.setAttribute('cy', String(event.clientY - boundingRect?.top));
+            queryText.setAttribute('x', String(event.clientX - boundingRect?.left));
+            queryText.setAttribute('y', String(event.clientY - boundingRect?.top));
+        }
     }
 
-    const onMouseMove = function (e: any) {
-        if (!currentPos.isDragging)
-            return;
-        let currentCon = findDOMNode(props.container.current) as Element;
-        let boundingRect = currentCon.getBoundingClientRect();
-
-        setCurrentPos({
-            pos: {
-                x: ((e.pageX - boundingRect.x) - currentPos.mousePos.x + currentPos.pos.x),
-                y: ((e.pageY - boundingRect.y) - currentPos.mousePos.y + currentPos.pos.y)
-            },
-            mousePos: { x: e.pageX - boundingRect.x, y: e.pageY - boundingRect.y },
-            isDragging: true
-        });
-
-        e.stopPropagation();
-        e.preventDefault();
-    }
 
     const animateCircle = function () {
         let circle = document.getElementById("node-" + props.id);
@@ -100,23 +102,15 @@ function Node(props: { id: number, nodeProps: ViewNodeProps, parentProps: ViewNo
 
     return (
         <g>
-            <circle id={"node-" + props.id} className="node"
-                onMouseDown={onMouseDown}
-                onMouseMove={onMouseMove}
-                onMouseUp={onMouseUp}
-                ref={nodeRect}
-                cx={currentPos.pos.x} cy={currentPos.pos.y} r={50} color="red"
-                fill="white" stroke="#5c6274"
-            >
+            <foreignObject ref={nodeRect} width="100" height="100" x={currentPos.pos.x} y={currentPos.pos.y}
+                           transform='translate(-50,-50)'>
+                <div className="circle">
+                    <span className="node-hint">{isClosest  ? 'Drop a node here to add' : nodeProps?.key}</span>
+                </div>
+            </foreignObject>
 
-            </circle>
-            <text font-size="2em" className="node-text" x={currentPos.pos.x} y={currentPos.pos.y} text-anchor="middle" stroke-width="12px" dy=".3em">
-                {nodeProps == null ? '' : nodeProps.node.key}
-            </text>
-            <ConnectedLine container={props.container} parentRef={parentProps} childRef={nodeProps} nodePos={currentPos} />
-        </g >
-
-
+            {/* <ConnectedLine container={props.container} parentRef={parentProps} childRef={nodeProps} nodePos={currentPos} /> */}
+        </g>
     );
 }
 
@@ -128,3 +122,4 @@ interface NodePosition {
     mousePos: Position
     isDragging: boolean | false
 }
+

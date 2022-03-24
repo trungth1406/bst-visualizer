@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Position, ViewNodeProps, ViewProps } from '../types';
-import { generateSvgPoint } from '../utils';
+import { Position, ViewNodeProps, ViewProps } from '../../model/types';
 import styles from './ConnectedLine.module.css';
 
 const ConnectedLine = function (props: { container: any, parentRef: ViewNodeProps, childRef: ViewNodeProps, nodePos: any }) {
@@ -21,15 +20,12 @@ const ConnectedLine = function (props: { container: any, parentRef: ViewNodeProp
     console.log(props.nodePos);
 
     if (props.parentRef) {
-      let parentPos = props.parentRef.viewProps.position;
-      let childPos = props.childRef.viewProps.position;
-
-      let startPos = generateSvgPoint(props.container.current, lineRef.current, parentPos.x, parentPos.y);
+      // let startPos = generateSvgPoint(props.container.current, lineRef.current, parentPos.x, parentPos.y);
       // let endPos = generateSvgPoint(props.container.current, lineRef.current, props.nodePos.pos.x, props.nodePos.pos.y);
-      setLinePos({
-        from: startPos,
-        to: props.nodePos.pos
-      })
+      // setLinePos({
+      //   from: startPos,
+      //   to: props.nodePos.pos
+      // })
     }
   }, [props.nodePos]);
 

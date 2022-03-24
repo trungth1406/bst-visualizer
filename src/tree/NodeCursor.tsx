@@ -1,13 +1,19 @@
 import React, {useEffect, useRef, useState} from "react";
 import {BehaviorSubject} from "rxjs";
 import {CursorNodePosition, Position} from "../model/types";
+import {findDOMNode} from "react-dom";
+import {isIntersected} from "../model/utils";
 
 
-function NodeCursor(props: { treeSubject: BehaviorSubject<CursorNodePosition> , cursorPosition: BehaviorSubject<Position> }) {
+function NodeCursor(props: {
+    treeSubject: BehaviorSubject<CursorNodePosition>,
+    cursorPosition: BehaviorSubject<Position>,
+    closestNode: BehaviorSubject<Position>
+}) {
 
-    const [toolTip, setToolTip] = useState('Enter a key value');
     const [keyInput, setKeyInput] = useState('');
     const nodeCursorPos = useRef(null);
+    const spinCircles = useRef(null);
 
 
     const onNodeDrop = function (e: any) {
@@ -29,19 +35,43 @@ function NodeCursor(props: { treeSubject: BehaviorSubject<CursorNodePosition> , 
         }
     }
 
+    useEffect(() => {
+        let subscription = props.closestNode.subscribe(closestPos => {
+            const circlePos: any = nodeCursorPos.current;
+            const boundingClientRect = circlePos.getBoundingClientRect();
+            const divWidth = boundingClientRect.width;
+            const cursorPos = {
+                x: translateToCenter(boundingClientRect.x, divWidth),
+                y: translateToCenter(boundingClientRect.y, divWidth),
+            }
+            const interactiveArea: SVGElement = document.querySelector(".tree-area")!;
+            const spinCircleRef = document.querySelector('.spin-circle')
+            if (closestPos && isIntersected(closestPos, cursorPos, interactiveArea)) {
+                spinCircleRef!.classList.add('filled-add');
+            } else {
+                spinCircleRef!.classList.remove('filled-add');
+            }
+
+        });
+        return () => {
+            subscription.unsubscribe();
+        }
+    }, [props.closestNode]);
+
     const isInRange = function (e: any, currentRect: DOMRect) {
         return e.pageX >= currentRect.x && e.pageY > currentRect.y;
     }
 
     const reattachNodeCursor = function (event: any) {
-
         let nodeCursor: HTMLDivElement = document.querySelector(".node-cursor")!;
-        let valueInput: HTMLDivElement = document.querySelector(".value-input")!;
+        let valueInput: HTMLInputElement = document.querySelector(".value-input")!;
         if (nodeCursor.classList.contains('filled-node')) {
             nodeCursor.classList.remove('filled-node');
         }
 
-        valueInput.style.display = 'none';
+        valueInput.value = '';
+        valueInput.blur();
+        // setKeyInput('');
         nodeCursor.style.transform = '';
         if (nodeCursor.classList.contains('remove-node')) nodeCursor.classList.remove('remove-node')
         nodeCursor.style.display = 'flex';
@@ -58,7 +88,7 @@ function NodeCursor(props: { treeSubject: BehaviorSubject<CursorNodePosition> , 
             if (nodeCursor) {
                 nodeCursor.style.top = (e.pageY) + "px"
                 nodeCursor.style.left = (e.pageX) + "px"
-                props.cursorPosition.next({x: e.pageX, y: e.pageY});
+                props.treeSubject.next({x: e.pageX, y: e.pageY ,value : null });
             }
         }
 
@@ -68,7 +98,7 @@ function NodeCursor(props: { treeSubject: BehaviorSubject<CursorNodePosition> , 
     const onNodeKeyChange = function (event: any) {
         let circlePos: any = nodeCursorPos.current;
         if (circlePos && (event.key === 'Enter')) {
-            let boundingClientRect = circlePos.getBoundingClientRect();
+            const boundingClientRect = circlePos.getBoundingClientRect();
             const divWidth = boundingClientRect.width;
             props.treeSubject.next({
                 x: translateToCenter(boundingClientRect.x, divWidth),
@@ -76,15 +106,17 @@ function NodeCursor(props: { treeSubject: BehaviorSubject<CursorNodePosition> , 
                 value: keyInput
             });
 
-            if (event.key === 'Escape') {
-                reattachNodeCursor(event);
-            }
+            props.treeSubject.next({
+                x: translateToCenter(boundingClientRect.x, divWidth),
+                y: translateToCenter(boundingClientRect.y, divWidth),
+                value: null
+            });
+            reattachNodeCursor(event);
         }
     }
 
     const onValueUpdate = function ({target}: any) {
         setKeyInput(target.value);
-        setToolTip('Enter to draw the node');
     }
 
     const translateToCenter = function (coordinate: number, divWidth: number) {
@@ -99,15 +131,15 @@ function NodeCursor(props: { treeSubject: BehaviorSubject<CursorNodePosition> , 
 
     return (
         <div ref={nodeCursorPos} onClick={onNodeDrop} className="node-cursor">
-            {/*<div className ="tooltip">{toolTip}</div>*/}
             <div className="cursor-content">
-                <input className="value-input"
-                       placeholder="Key"
-                       onChange={onValueUpdate}
-                       onKeyPress={onNodeKeyChange}
-                       onKeyDown={onEscapeKeyPressed}
-                       value={keyInput}/>
-                <div className="spin-circle"/>
+                <input
+                    className="value-input"
+                    placeholder="Key"
+                    onChange={onValueUpdate}
+                    onKeyPress={onNodeKeyChange}
+                    onKeyDown={onEscapeKeyPressed}
+                    value={keyInput}/>
+                <div ref={spinCircles} className="spin-circle"/>
             </div>
         </div>);
 }

@@ -7,6 +7,7 @@
  */
 
 import {Point, Point2D, Rectangle, Rectangle2D} from "./point";
+import {BSTViewNodeProps, Position, ViewNodeProps} from "./types";
 
 
 const Tree = function <K, V>(): any {
@@ -32,7 +33,7 @@ const Tree = function <K, V>(): any {
 
 Tree.prototype.insertNode = function insertNode<K, V>(node: TreeNode<K, V> | null, key: K, value: V): TreeNode<K, V> | null {
     if (node == null) {
-        return {key: key, value: value, left: null, right: null}
+        return {key: key, value: value, left: null, right: null, parent: null};
     }
 
     if (key < node.key) {
@@ -87,6 +88,55 @@ Tree.prototype.delMin = function delMin<K, V>(node: TreeNode<K, V>): TreeNode<K,
 const BinarySearchTree = function <K, V>(): BinarySearchTreeModel<K, V> {
     // @ts-ignore
     return new Tree<K, V>();
+}
+
+
+export const AnimatedTree = function <K, V>() {
+
+
+    const insert = function (key: K, value: V, rootViewProps: TreeNode<K, V>): TreeNode<K, V> {
+        return insertNode(key, value, rootViewProps, rootViewProps.parent, true);
+    }
+
+    const insertNode = function (key: K, value: V,
+                                 currentNode: TreeNode<K, V> | null | undefined,
+                                 parentNode: TreeNode<K, V> | null, isLeft: boolean): TreeNode<K, V> {
+        if (currentNode == null) {
+            return {
+                parent: parentNode,
+                key: key,
+                left: null, right: null,
+                value: value,
+                viewProps: {
+                    x: isLeft ? parentNode?.viewProps?.x! - 100 : parentNode?.viewProps?.x! + 100,
+                    y: isLeft ? parentNode?.viewProps?.y! + 100 : parentNode?.viewProps?.y! + 100,
+                }
+            };
+        }
+        if (key < currentNode.key) {
+            currentNode.left = insertNode(key, value, currentNode.left, currentNode, true);
+        } else if (key > currentNode.key) {
+            currentNode.right = insertNode(key, value, currentNode.right, currentNode, false);
+        } else {
+            currentNode.value = value;
+        }
+        return currentNode;
+    }
+
+
+    const getNodes = function (node: TreeNode<K, V> | null | undefined): Array<TreeNode<K, V>> {
+        if (node == null) {
+            return [];
+        }
+        return [node].concat(getNodes(node.left)).concat(getNodes(node.right));
+    }
+
+
+    return {
+        insert: insert,
+        getNodeArray: getNodes
+    }
+
 }
 
 
@@ -151,12 +201,41 @@ export const KdTree = function () {
         return currentNode;
     }
 
+    const find = function (point: Point): KdTreeNode<Point, any> | null {
+        return findNode(root, point, false);
+    }
+
+    const findNode = function (currentNode: KdTreeNode<Point, any> | null, point: Point, isHorizontalCompare: boolean): KdTreeNode<Point, any> | null {
+        if (currentNode == null) {
+            return null;
+        }
+
+        if (currentNode.point.x === point.x && currentNode.point.y === point.y) {
+            return currentNode;
+        }
+
+
+        if (isHorizontalCompare) {
+            if (point.y > currentNode.point.y) {
+                return findNode(currentNode.left, point, false);
+            } else {
+                return findNode(currentNode.right, point, false);
+            }
+        } else {
+            if (point.x < currentNode.point.x) {
+                return findNode(currentNode.left, point, true);
+            } else {
+                return findNode(currentNode.right, point, true);
+            }
+        }
+    }
+
     const closest = function (point: Point): KdTreeNode<Point, any> | null {
-        return closestNode(root, root, point, false, false);
+        return closestNode(root, root, point, true);
     }
 
     const closestNode = function (currentNode: KdTreeNode<Point, any> | null, currentClosest: KdTreeNode<Point, any> | null,
-                                  point: Point, isHorizontalCompare: boolean, isLeftOrBottom: boolean): KdTreeNode<Point, any> | null {
+                                  point: Point, isHorizontalCompare: boolean): KdTreeNode<Point, any> | null {
         if (currentNode == null) {
             return currentClosest;
         }
@@ -167,20 +246,18 @@ export const KdTree = function () {
             currentClosest = currentNode;
         }
         if (isHorizontalCompare) {
-            if (point.y > currentNode.point.y) {
-                return closestNode(currentNode.left, currentClosest, point, false, true);
+            if (point.x < currentNode.point.x) {
+                return closestNode(currentNode.left, currentClosest, point, true,);
             } else {
-                return closestNode(currentNode.right, currentClosest, point, false, false);
+                return closestNode(currentNode.right, currentClosest, point, true,);
             }
         } else {
-            if (point.x < currentNode.point.x) {
-                return closestNode(currentNode.left, currentClosest, point, true, true);
+            if (point.y > currentNode.point.y) {
+                return closestNode(currentNode.left, currentClosest, point, false);
             } else {
-                return closestNode(currentNode.right, currentClosest, point, true, false);
+                return closestNode(currentNode.right, currentClosest, point, false);
             }
         }
-
-        return currentClosest;
     }
 
 
@@ -239,7 +316,8 @@ export const KdTree = function () {
         },
         insert: insert,
         draw: draw,
-        closest: closest
+        closest: closest,
+        find: find
     }
 
 
@@ -251,6 +329,8 @@ export interface TreeNode<K, V> {
     value: V
     left: TreeNode<K, V> | null,
     right: TreeNode<K, V> | null,
+    parent: TreeNode<K, V> | null;
+    viewProps?: Position
 }
 
 export interface KdTreeNode<K, V> {

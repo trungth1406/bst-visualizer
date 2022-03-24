@@ -1,20 +1,20 @@
 import {MouseEventHandler, useCallback, useEffect, useLayoutEffect, useRef, useState} from 'react';
 import {findDOMNode} from 'react-dom';
 import ConnectedLine from './ConnectedLine/ConnectedLine';
-import {Position, ViewNodeProps} from '../model/types';
-import {BehaviorSubject, takeWhile} from "rxjs";
-import {generateSvgPoint} from "../model/utils";
+import {BSTViewNodeProps, CursorNodePosition, Position, ViewNodeProps} from '../model/types';
+import {BehaviorSubject, Subscription, takeWhile, zip} from "rxjs";
+import {htmlCoordinateToSvgCoordinate, isIntersected, svgCoordinateToHtmlCoordinate} from "../model/utils";
+import NodeCursor from './NodeCursor';
+import {TreeNode} from "../model/bst";
 
 
-const toSvgCoordinates = function (container: any, element: any, x: number, y: number) {
-    let svgPoint = container.createSVGPoint();
-    svgPoint.x = x;
-    svgPoint.y = y;
-    return svgPoint.matrixTransform(element.getScreenCTM().inverse());
-}
-
-function Node(props: { id: number, nodeProps: ViewNodeProps, parentProps: ViewNodeProps, container: any, currentClosest: Position | undefined }) {
+function Node(props: {
+    id: number, nodeProps: TreeNode<number, any> | null, parentProps: TreeNode<number, any>| null,
+    container: any, currentClosest: Position | undefined,
+    cursorPos: BehaviorSubject<Position>, closestNode: BehaviorSubject<Position>
+}) {
     let nodeProps = props.nodeProps;
+    let nodePosition = nodeProps?.viewProps;
     let parentContainer = findDOMNode(props.container.current) as Element;
 
     let nodeRect: any = useRef(null);
@@ -25,7 +25,6 @@ function Node(props: { id: number, nodeProps: ViewNodeProps, parentProps: ViewNo
 
     const [isDragging, setIsDragging] = useState<boolean>(false);
     const [isClosest, setIsClosest] = useState<boolean>(false);
-    // const {x,y} = toSvgCoordinates(props.container.current, props.container.current, nodeProps.viewProps.position.x, nodeProps.viewProps.position.y);
 
     let [currentPos, setCurrentPos] = useState<NodePosition>(
         {
@@ -38,20 +37,27 @@ function Node(props: { id: number, nodeProps: ViewNodeProps, parentProps: ViewNo
             isDragging: false
         });
 
+
     useEffect(() => {
         setCurrentPos({
             pos: {
-                x: nodeProps.viewProps.position.x, y: nodeProps.viewProps.position.y
+                x: nodePosition!.x, y: nodePosition!.y
             },
             mousePos: {x: 0, y: 0},
             isDragging: false
         });
-
-    }, [nodeProps.viewProps.position]);
+    }, [nodePosition]);
 
     useEffect(() => {
-        setIsClosest(props.currentClosest?.x === currentPos.pos.x)
-
+        let cursorNodePosition: Subscription;
+        if (!(props.nodeProps!.parent) && props.currentClosest) {
+            setIsClosest(props.currentClosest.x === nodePosition?.x && props.currentClosest.y === nodePosition.y);
+        }
+        return () => {
+            if (cursorNodePosition) {
+                cursorNodePosition.unsubscribe();
+            }
+        }
     }, [props.currentClosest])
 
 
@@ -96,18 +102,13 @@ function Node(props: { id: number, nodeProps: ViewNodeProps, parentProps: ViewNo
 
     return (
         <g>
-            <circle id={"node-" + props.id} className="node"
-                    onMouseDown={onMouseDown}
-                    ref={nodeRect}
-                    cx={currentPos.pos.x} cy={currentPos.pos.y} r={50} color="red"
-                    fill={'white'} strokeWidth={2}
-            >
+            <foreignObject ref={nodeRect} width="100" height="100" x={currentPos.pos.x} y={currentPos.pos.y}
+                           transform='translate(-50,-50)'>
+                <div className="circle">
+                    <span className="node-hint">{isClosest  ? 'Drop a node here to add' : nodeProps?.key}</span>
+                </div>
+            </foreignObject>
 
-            </circle>
-            <text onMouseDown={onMouseDown} ref={textRef} className="node-text" x={currentPos.pos.x}
-                  y={currentPos.pos.y} textAnchor="middle" strokeWidth="12px" fontSize="3rem">
-                {isClosest ? 'Drop a node here to add' : nodeProps.node.key}
-            </text>
             {/* <ConnectedLine container={props.container} parentRef={parentProps} childRef={nodeProps} nodePos={currentPos} /> */}
         </g>
     );

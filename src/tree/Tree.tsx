@@ -1,81 +1,116 @@
 import React, {useEffect, useRef, useState} from "react";
-import {KdTree, TreeNode} from '../model/bst';
+import {AnimatedTree, KdTree, TreeNode} from '../model/bst';
 import Node from "./Node";
-import {CursorNodePosition, Position, ViewNodeProps} from "../model/types";
-import {BehaviorSubject, last, take, takeWhile} from "rxjs";
-import {generateSvgPoint} from "../model/utils";
+import {BSTViewNodeProps, CursorNodePosition, Position} from "../model/types";
+import {BehaviorSubject, zip} from "rxjs";
+import {htmlCoordinateToSvgCoordinate, isIntersected} from "../model/utils";
 
 const kdTree = KdTree();
+const nodeTree = KdTree();
 
-function Tree(props: { treeSubject: BehaviorSubject<CursorNodePosition>, cursorPosition: BehaviorSubject<Position> }) {
-    const nodeContainer: any = useRef(null);
-    let [rootNodes, setNodeArrays] = useState<ViewNodeProps[]>([]);
+function Tree(props: {
+    treeSubject: BehaviorSubject<CursorNodePosition>,
+    cursorPosition: BehaviorSubject<Position>, closestNode: BehaviorSubject<Position>
+}) {
+    const svgContainer: any = useRef(null);
+    let [rootNodes, setNodeArrays] = useState<TreeNode<any, any>[]>([]);
     let [currentClosest, setCurrentClosest] = useState<Position>();
 
 
     useEffect(() => {
-        props.treeSubject
-            .subscribe(onNewRootNodeValueReceived())
-        props.cursorPosition
-            .subscribe(value => {
-                let cursorRelativePoint = generateSvgPoint(nodeContainer.current, nodeContainer.current, value.x, value.y);
+        let nodeValueSubscription = props.treeSubject
+            .subscribe(onNewRootNodeValueReceived());
+
+        let closestToCursorSubscription = props.cursorPosition
+            .subscribe(cursorPos => {
+                let cursorRelativePoint = htmlCoordinateToSvgCoordinate(svgContainer.current, cursorPos.x, cursorPos.y);
                 let closest = kdTree.closest({x: cursorRelativePoint.x, y: cursorRelativePoint.y});
                 if (closest) {
                     setCurrentClosest({
                         x: closest.point.x,
                         y: closest.point.y,
                     });
+                    props.closestNode.next(closest.point);
                 }
-            })
+            });
+        return () => {
+            nodeValueSubscription.unsubscribe();
+            closestToCursorSubscription.unsubscribe();
+        }
     }, []);
-
 
     const onNewRootNodeValueReceived = function () {
         let isHorizontal = false;
+
         return (next: CursorNodePosition) => {
-            if (next.x && next.y) {
-                let boundingClientRect = nodeContainer.current.getBoundingClientRect();
+
+            if (next.x && next.y && next.value) {
+                let relativeSvgPoint = htmlCoordinateToSvgCoordinate(svgContainer.current, next.x, next.y);
                 const newNode: TreeNode<any, any> = {
-                    key: next.value, value: next.value, left: null, right: null,
-
-                }
-                let relativeSvgPoint = generateSvgPoint(nodeContainer.current, nodeContainer.current, next.x, next.y);
-                kdTree.insert({x: relativeSvgPoint.x, y: relativeSvgPoint.y});
-
-                setNodeArrays((prevState) => {
-                    return [...prevState, generateViewNode(newNode, {
-                        value: newNode.value,
+                    key: parseInt(next.value, 10), value: next.value, left: null, right: null,
+                    viewProps: {
                         x: relativeSvgPoint.x,
-                        y: relativeSvgPoint.y
-                    }, boundingClientRect)]
-                });
+                        y: relativeSvgPoint.y,
+                    },
+                    parent: null
+                }
 
-                // kdTree.draw(nodeContainer.current);
-                isHorizontal = !isHorizontal;
+
+                kdTree.insert({x: relativeSvgPoint.x, y: relativeSvgPoint.y});
+                setNodeArrays((prevState) => {
+                    return [...prevState, newNode];
+                });
+                // kdTree.draw(svgContainer.current);
+                // isHorizontal = !isHorizontal;
             }
         };
     }
 
-    const generateViewNode = function (node: TreeNode<any, any>, pos: CursorNodePosition, treeContainer: any): ViewNodeProps {
-        return {
-            node: node,
-            parentNode: null,
-            boundingRect: treeContainer,
-            viewProps: {
-                position: {
-                    x: pos.x, y: pos.y
+    useEffect(() => {
+
+        const subscription = zip(props.closestNode, props.treeSubject).subscribe(
+            ([closest,cursorPos]) => {
+                const interactiveArea: SVGElement = document.querySelector(".tree-area")!;
+                console.log(cursorPos);
+                console.log(cursorPos, isIntersected(closest, cursorPos, interactiveArea))
+                if (closest.x === currentClosest?.x && closest.y === currentClosest.y && isIntersected(closest, cursorPos, interactiveArea)) {
+                    let matchedRootNode = rootNodes.find(node => {
+                        let nodePos = node.viewProps;
+                        return nodePos?.x === closest.x && nodePos.y === closest.y;
+                    });
+
+                    console.log(cursorPos.value)
+                    if (cursorPos.value) {
+                        const animatedTree = AnimatedTree<number, any>();
+                        if (matchedRootNode) {
+                            matchedRootNode = animatedTree.insert(parseInt(cursorPos.value, 10), cursorPos.value, matchedRootNode);
+                            rootNodes.splice(rootNodes.indexOf(matchedRootNode), 1);
+                            const nodeArrays = animatedTree.getNodeArray(matchedRootNode || null);
+                            console.log(nodeArrays);
+                            setNodeArrays([...nodeArrays]);
+                        }
+
+                    }
                 }
             }
+        );
+        return () => {
+            subscription.unsubscribe();
         }
-    }
+    }, [currentClosest, props.treeSubject.getValue()]);
 
 
     return (
-        <svg className="tree-area" ref={nodeContainer} width="100%" height="100%">
+        <svg className="tree-area" ref={svgContainer} width="100%" height="100%">
             {
-                rootNodes.map((element: any, index: any) => {
-                    return <Node key={index} id={index} nodeProps={element} parentProps={element.parentNode}
-                                 container={nodeContainer} currentClosest={currentClosest}/>;
+                rootNodes.map((element: TreeNode<any, any>, index: any) => {
+
+                    return (
+                        <Node key={index} id={index} nodeProps={element} parentProps={element.parent}
+                              container={svgContainer} currentClosest={currentClosest}
+                              cursorPos={props.cursorPosition} closestNode={props.closestNode}/>
+                    );
+
                 })
             }
         </svg>

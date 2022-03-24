@@ -1,11 +1,9 @@
 import {TreeNode} from "./bst";
 
 export interface ViewNodeProps {
-    node: TreeNode<any, any>,
-    parentNode: ViewNodeProps | null,
-    boundingRect: any;
-    viewProps: ViewProps
+
 }
+
 
 export interface ViewProps {
     position: Position
@@ -28,3 +26,30 @@ export interface CursorNodePosition {
     value: any
 }
 
+export interface BSTViewNodeProps extends ViewNodeProps {
+    node: TreeNode<any, any> | null,
+    parentNode: BSTViewNodeProps | null,
+    boundingRect: any;
+    viewProps: ViewProps
+    left: BSTViewNodeProps | null,
+    right: BSTViewNodeProps | null,
+    animationPath?: string[];
+    isRoot: boolean;
+    bstRootNode?: BSTViewNodeProps | null;
+}
+
+export interface ViewRootNodeAction {
+    type: string
+    rootNode: ViewNodeProps;
+}
+
+export interface BSTAction {
+    currentRoot: BSTViewNodeProps;
+    newNode: BSTViewNodeProps;
+    type: string;
+}
+
+
+export interface RootNodeState {
+    rootNodes: ViewNodeProps[];
+}

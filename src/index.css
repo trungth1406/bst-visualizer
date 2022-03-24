@@ -100,7 +100,7 @@ html,body {
 
     .node-cursor {
         @apply rounded-full absolute w-14 h-14  z-10 hidden
-               transition-transform animate-pingone bg-transparent
+               transition-transform animate-pingone bg-transparent border-dashed
     }
 
     .remove-node{
@@ -132,13 +132,22 @@ html,body {
     }
 
     .spin-circle{
-        @apply flex  justify-center top-0 bottom-0 right-0 left-0 mt-auto border-none rounded-full
-         absolute  
+        @apply flex  justify-center top-0 bottom-0 right-0 left-0 mt-auto border-none rounded-full absolute
     }
     
-    .spin-circle::after{
-        @apply animate-loading   border-gray-400  
+    /*.spin-circle::after{*/
+    /*    @apply animate-loading  border-gray-400*/
+    /*}*/
+
+    .node-hint{
+        @apply text-gray-400 animate-pulse
     }
+
+    .filled-add{
+        @apply   animate-ping  opacity-25 bg-green-300
+    }
+
+    
 
     
 }
@@ -157,17 +166,21 @@ html,body {
 
 
 input{
-    background: transparent;
+    opacity: .75;
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
+    outline: none;
+    cursor: pointer;
 }
 
 input:focus{
-    outline:  none;
-    background: transparent;
+    outline: none;
+    opacity: .75;
+    box-shadow: rgba(0, 0, 0, 0.25) 0px 54px 55px, rgba(0, 0, 0, 0.12) 0px -12px 30px, rgba(0, 0, 0, 0.12) 0px 4px 6px, rgba(0, 0, 0, 0.17) 0px 12px 13px, rgba(0, 0, 0, 0.09) 0px -3px 5px;
 }
 
-input:active {
-    background: transparent;
-}
+/*input:active {*/
+/*    background: transparent;*/
+/*}*/
 
 .tooltip{
     font-size: 8px !important;
@@ -177,14 +190,14 @@ input:active {
     border-width: 1px;
 }
 
-.spin-circle::after{
-    content: '';
-    border: 1px solid;
+/*.spin-circle::after{*/
+/*    content: '';*/
+/*    border: 1px solid;*/
 
-    border-radius: 9999px;
-    width: 100%;
-    height: 100%;
-}
+/*    border-radius: 9999px;*/
+/*    width: 100%;*/
+/*    height: 100%;*/
+/*}*/
 
 
 circle {
@@ -199,4 +212,21 @@ text{
 
 .node{
     stroke: #AEB1BD;
+}
+
+
+.circle{
+    background: white;
+    height: 100%;
+    border-radius: 100%;
+    text-align: center;
+    font-size: 1rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #AEB1BD;
+}
+
+.spin-circle{
+
 }
